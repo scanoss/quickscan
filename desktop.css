@@ -44,7 +44,6 @@ body {
   margin-right: 15px;
 }
 
-
 .report {
   margin: 0px;
 }
@@ -55,14 +54,15 @@ body {
   height: 100%;
   min-height: 100%;
   margin-top: 15px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.loading-content{
+.loading-content {
   margin: 50px auto;
   padding-top: 150px;
   text-align: center;
   color: #666666;
-  
 }
 
 .chart {

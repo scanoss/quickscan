@@ -46,6 +46,7 @@ request_worker.onmessage = (e) => {
   let counter = e.data.counter;
   ctx.scanned += counter;
   let done = ctx.scanned >= ctx.total;
+  ctx.wfp = e.data.wfp
   update_licenses(ctx, json);
   update_vulns(ctx, json)
   append_to_results(ctx, json, done);
@@ -132,6 +133,7 @@ function scanFolder (initctx, callback) {
   ctx.osscount = 0;
   ctx.resultfile = `${ctx.scandir}/scanoss-scan.json`;
   ctx.csvbom = `${ctx.scandir}/sbom.csv`;
+  ctx.wfpfile = `${ctx.scandir}/scan.wfp`;
   ctx.wfp = '';
   // console.log(`Result file: ${ctx.resultfile}`)
   fs.writeFileSync(
@@ -178,6 +180,7 @@ function append_to_results(ctx, json, done) {
     } else {
       fs.appendFileSync(ctx.resultfile, `,`);
     }
+    fs.appendFileSync(ctx.wfpfile, `${ctx.wfp}${os.EOL}`)
   }
 }
 

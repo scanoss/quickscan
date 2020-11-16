@@ -16,21 +16,111 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut, Menu } = require('electron');
 const path = require('path')
+const isMac = process.platform === 'darwin';
+
+const template = [
+  // { role: 'appMenu' }
+  ...(isMac
+    ? [
+        {
+          label: app.name,
+          submenu: [
+            { role: 'about' },
+            { type: 'separator' },
+            { role: 'services' },
+            { type: 'separator' },
+            { role: 'hide' },
+            { role: 'hideothers' },
+            { role: 'unhide' },
+            { type: 'separator' },
+            { role: 'quit' },
+          ],
+        },
+      ]
+    : []),
+  // { role: 'fileMenu' }
+  {
+    label: 'File',
+    submenu: [
+      isMac ? { role: 'close' } : { role: 'quit' },
+      {
+        label: 'Scan List',
+        click: async () => {
+          BrowserWindow.getFocusedWindow().loadFile('scans.html');
+        },
+      },
+    ],
+  },
+  // { role: 'viewMenu' }
+  {
+    label: 'View',
+    submenu: [
+      { role: 'reload' },
+      { role: 'forcereload' },
+      { role: 'toggledevtools' },
+      { type: 'separator' },
+      { role: 'resetzoom' },
+      { role: 'zoomin' },
+      { role: 'zoomout' },
+      { type: 'separator' },
+      { role: 'togglefullscreen' },
+    ],
+  },
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      ...(isMac
+        ? [
+            { type: 'separator' },
+            { role: 'front' },
+            { type: 'separator' },
+            { role: 'window' },
+          ]
+        : [{ role: 'close' }]),
+    ],
+  },
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'SCANOSS Home',
+        click: async () => {
+          const { shell } = require('electron');
+          await shell.openExternal('https://scanoss.com');
+        },
+      },
+      {
+        label: 'GitHub repo',
+        click: async () => {
+          const { shell } = require('electron');
+          await shell.openExternal('https://github.com/scanoss/quickscan');
+        },
+      },
+    ],
+  },
+];
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
 
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1300,
     height: 900,
-    title: 'SCANOSS desktop',
+    title: 'SCANOSS Quickscan',
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
       nodeIntegrationInWorker: true,
     },
   });
+
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')

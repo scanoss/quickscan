@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://osskb.org 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' blob: data:;">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' https://osskb.org; script-src 'self'">
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="desktop.css">
+
+  <title>SCANOSS Quickscan</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand navbar-dark justify-content-end">
+
+    <a class="navbar-brand" href="#"><img src="quickscan.png" width="150"></a>
+    <ul class="nav navbar-nav ml-auto mr-1">
+      <li>
+        <a href="index.html" class="btn btn-outline-light my-2 my-sm-0" >RETURN TO SCAN PAGE</a>
+      </li>
+      
+    </ul>
+
+  </nav>
+
+  <div class="container-fluid">
+    <div class="report-body">
+      
+    <div class="row ctable">
+      <div class="col-sm ">
+        <h6>Scan Files</h6>
+        <table class="table table-hover thead-light">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">WFP File</th>
+              <th scope="col">Raw Results</th>
+              <th scope="col">CSV Results</th>
+              <th scope="col">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    
+    </div>
+    </div>
+  </div>
+  
+
+  
+  <script src="./scans.js"></script>
+</body>
+
+</html>

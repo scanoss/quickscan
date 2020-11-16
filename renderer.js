@@ -19,8 +19,7 @@
 const scanner = require('./scanner');
 const fs = require('fs');
 var Chart = require('chart.js');
-const { fstat } = require('fs');
-const { remote, ipcRenderer } = require('electron'),
+const { remote } = require('electron'),
   dialog = remote.dialog,
   app = remote.app,
   WIN = remote.getCurrentWindow();
@@ -31,6 +30,10 @@ window.Bootstrap = require('bootstrap');
 const SCANOSS_DIR = `${app.getPath('appData')}/scanoss`;
 const DOWNLOADS_DIR = app.getPath('downloads');
 
+module.exports = {
+  SCANOSS_DIR,
+  DOWNLOADS_DIR,
+};
 const scan_worker = new Worker('./scanner.js');
 const timerInstance = new Timer();
 var timerFunction;

@@ -1,6 +1,6 @@
 {
   "name": "scanoss-quickscan",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
