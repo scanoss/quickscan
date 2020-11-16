@@ -36,4 +36,4 @@ Each OSS component match provided by osskb.org contains the following metadata:
   
 ## Next Steps
 
-For an enhanced scanning experience with richer results, visit [https://scanoss.com"](https://scanoss.com)
+For an enhanced scanning experience with richer results, visit [https://scanoss.com](https://scanoss.com)
