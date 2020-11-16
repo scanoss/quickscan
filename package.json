@@ -1,0 +1,64 @@
+{
+  "name": "scanoss-quickscan",
+  "version": "1.0.1",
+  "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -mwl",
+    "dist-linux": "electron-builder -l",
+    "dist-mac": "electron-builder -m"
+  },
+  "repository": "https://github.com/scanoss/quickscan",
+  "author": "SCANOSS <info@scanoss.com>",
+  "license": "GPL-2.0+",
+  "devDependencies": {
+    "electron": "^10.1.3",
+    "electron-builder": "^22.9.1",
+    "electron-notarize": "^1.0.0"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.1",
+    "bootstrap": "^4.5.3",
+    "chart.js": "^2.9.4",
+    "easytimer.js": "^4.3.0",
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.1",
+    "smart-request-balancer": "^2.1.1",
+    "underscore": "^1.11.0"
+  },
+  "build": {
+    "appId": "com.scanoss.quickscan",
+    "linux": {
+      "target": [
+        "deb",
+        "rpm"
+      ],
+      "vendor": "SCANOSS",
+      "icon": "icons/512x512.png",
+      "category": "Utility",
+      "executableName": "scanoss-quickscan",
+      "desktop": {
+        "Name": "SCANOSS Quickscan",
+        "Icon": "scanoss-quickscan",
+        "Type": "Application",
+        "Categories": "Utility"
+      }
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "./build/entitlements.mac.inherit.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "target": [
+        "dmg"
+      ]
+    },
+    "dmg": {
+      "sign": false
+    },
+    "afterSign": "scripts/notarize.js"
+  }
+}

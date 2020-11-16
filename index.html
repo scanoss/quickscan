@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://osskb.org 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' blob: data:;">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' https://osskb.org; script-src 'self'">
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="desktop.css">
+
+  <title>SCANOSS Quickscan</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand navbar-dark justify-content-end">
+
+    <a class="navbar-brand" href="#"><img src="quickscan.png" width="150"></a>
+    <ul class="nav navbar-nav ml-auto mr-1">
+      <li>
+        <a href="#" class="btn btn-outline-light my-2 my-sm-0" id="new-sbom">SCAN FOLDER</a>
+      </li>
+      <li>
+        <button class="btn btn-outline-light my-2 my-sm-0 download-button disabled">DOWNLOAD REPORT</button>
+      </li>
+    </ul>
+
+  </nav>
+
+  <div class="container-fluid intro">
+    <div class="report-body">
+      
+      <div class="row intro-body first-row">
+        <h5>What is SCANOSS Quickscan?</h5>
+        <p>It is a tool that demonstrates scanning source code against <a href="https://osskb.org">osskb.org</a>.
+          SCANOSS Quickscan scans source code
+          against a knowledge base representing the entire OSS community. The results of the scan contain OSS matches
+          (full file or snippet) of the scanned code against OSS components.</p>
+      </div>
+      <div class="row intro-body">
+        <h5>How does it work? </h5>
+        <p>Select a folder containing source code files and
+          the application will generate fingerprints and send them to the OSSKB API for scanning. It is important to stress that no source code is sent to the osskb.org API. 
+        The client extracts hashes from the source code using an open source algorithm. A good explanation of the algorithm as well as an implementation can be found here: 
+        <a href="https://github.com/scanoss/wfp">https://github.com/scanoss/wfp</a>.</p>
+
+        <p>Quickscan will show a simple visualisation that represents the data contained in the scan results. If you
+          click on a segment in the licenses chart, you will
+          be presented with a table containing the list of components where a particular license has been detected.
+          Similarly, if you click on a severity in the vulnerability chart,
+          you will see the components affected by vulnerabilites with the selected severity.
+        </p>
+
+        <p>You can also download the full report of the scan in CSV format, via the "DOWNLOAD REPORT" button on the top
+          right corner.</p>
+      </div>
+      <div class="row intro-body">
+        <h5>About the results</h5>
+        <p>The results of the scan support building a <a
+            href="https://en.wikipedia.org/wiki/Software_bill_of_materials">Software Bill of Materials (SBOM)</a> of a
+          software product. 
+          The SBOM describes the list of software components in a product. They can also provide additional information
+          that can help evaluate the use of the component. </p>
+        <p>The CSV Report provided by SCANOSS Quickscan should be considered as a <i>draft</i> SBOM.</p>
+        <p>Each OSS component match provided by osskb.org contains the following metadata:</p>
+
+        <ul>
+          <li>Component identification (vendor, component, version, url...)</li>
+          <li>License identifications</li>
+          <li>Copyright notices</li>
+          <li>Vulnerabilities</li>
+        </ul>
+      </div>
+      <div class="row intro-body">
+        <h5>Next Steps</h5>
+        <div id="contact-us">
+          <p>For an enhanced scanning experience with richer results, visit <a
+            href="https://scanoss.com">https://scanoss.com</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <div class="container-fluid loading">
+    <div class="report-body">
+      <div class="loading-content">
+        <h1><i class="fas fa-sync fa-spin"></i></h1>
+        <h2>Preparing Scan for <span class="counter"></span> Files</h2>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="report" class="report">
+    <div class="container-fluid">
+      <div class="row" id="report-head">
+        <div class="progress">
+          <div class="progress-bar progress-bar-custom" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+            aria-valuemax="100">
+          </div>
+        </div>
+        <div class="progress-legend w-100">
+          <div class="scanfolder"></div>
+          <div id="report-status" class="float-right"><span id="elapsed">00:00:00</span> elapsed (<span
+              class="scanned-files"></span> files
+            scanned)</div>
+        </div>
+
+      </div>
+      <div class="report-body">
+        <div class="loading">
+          <h1><i class="fas fa-sync fa-spin"></i></h1>
+          <h2>Preparing Scan for <span class="counter"></span> Files</h2>
+        </div>
+        <div class="row">
+          <div class="col-sm chart">
+            <canvas id="license-chart" width="500" height="400"></canvas>
+          </div>
+          <div class="col-sm chart">
+            <div class="row">
+              <div class="col-sm chart">
+                <canvas id="oss-chart" width="500" height="150"></canvas>
+              </div>
+              <div class="col-sm chart">
+                <h5 id="novulns">No vulnerabilities detected</h5>
+                <canvas id="vuln-chart" width="500" height="300"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row ctable">
+          <div class="col-sm ">
+            <h6>Component matches for license <span class="hoverlicense"></span></h6>
+            <table class="table table-hover thead-light">
+              <thead>
+                <tr>
+                  <th scope="col">Vendor</th>
+                  <th scope="col">Component</th>
+                  <th scope="col">Version</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <div class="row vtable">
+          <div class="col-sm ">
+            <h6>Components with <span class="severity"></span> Vulnerabilities</h6>
+            <table class="table table-hover thead-light">
+              <thead>
+                <tr>
+                  <th scope="col">Vendor</th>
+                  <th scope="col">Component</th>
+                  <th scope="col">Version</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="./renderer.js"></script>
+</body>
+
+</html>

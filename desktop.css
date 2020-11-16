@@ -1,0 +1,114 @@
+body {
+  background-color: #790600;
+}
+
+.container-fluid {
+  height: 85vh;
+}
+
+.container-fluid .loading {
+  margin-top: 70px;
+}
+
+.navbar {
+  background-color: #790600;
+}
+
+.progress {
+  margin-left: 15px;
+  margin-right: 15px;
+  width: 100%;
+  height: 25px;
+  font-size: 20px;
+  border: 2px solid white;
+  background-color: #790600;
+  border-radius: 0px;
+}
+.progress-bar {
+  width: 0%;
+  color: #790600;
+  background-color: white;
+}
+
+.progress-legend {
+  color: white;
+  font-size: 10px;
+}
+
+.scanfolder {
+  margin-left: 15px;
+}
+
+#report-status {
+  margin-top: -15px;
+  margin-right: 15px;
+}
+
+
+.report {
+  margin: 0px;
+}
+
+.report-body {
+  background-color: white;
+  border-radius: 8px;
+  height: 100%;
+  min-height: 100%;
+  margin-top: 15px;
+}
+
+.loading-content{
+  margin: 50px auto;
+  padding-top: 150px;
+  text-align: center;
+  color: #666666;
+  
+}
+
+.chart {
+  max-width: 500px;
+  max-height: 400px;
+  margin-top: 10px;
+}
+
+#novulns {
+  margin-top: 30px;
+  z-index: -100;
+  text-align: left;
+}
+
+.download-button {
+  margin-left: 10px;
+  margin-right: 0px;
+}
+
+.refresh {
+  margin: 10px 10px;
+  min-height: 50px;
+}
+.f-80 {
+  font-size: 80%;
+}
+
+.ctable,
+.vtable {
+  margin-top: 15px;
+  margin-left: 20px;
+  margin-right: 20px;
+  font-size: 80%;
+}
+
+#oss-chart {
+  padding-left: 65px;
+}
+
+.first-row {
+  padding-top: 30px;
+}
+
+.intro-body {
+  display: block;
+  padding-left: 30px;
+  padding-right: 30px;
+  font-size: 14px;
+}
