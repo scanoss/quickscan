@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder -mwl",
+    "dist": "rm -rf dist/* && electron-builder -mwl",
     "dist-linux": "electron-builder -l",
     "dist-mac": "electron-builder -m"
   },
@@ -24,13 +24,11 @@
     "chart.js": "^2.9.4",
     "easytimer.js": "^4.3.0",
     "jquery": "^3.5.1",
-    "popper.js": "^1.16.1",
-    "smart-request-balancer": "^2.1.1",
-    "underscore": "^1.11.0"
+    "popper.js": "^1.16.1"
   },
   "build": {
     "appId": "com.scanoss.quickscan",
-    "productName":  "SCANOSS Quickscan",
+    "productName": "SCANOSS Quickscan",
     "copyright": "Copyright © 2020 SCANOSS.COM",
     "linux": {
       "target": [

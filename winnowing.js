@@ -59,7 +59,7 @@ a list of WFP fingerprints with their corresponding line numbers.
 //  List of extensions that are ignored
 const FILTERED_EXT = [
   '',
-  '.png',
+  '.png', '.pem','.crt','cnf',
   '.html',
   '.xml',
   '.svg',
