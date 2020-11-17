@@ -130,9 +130,7 @@ function scan_callback(ctx) {
   $('.progress-bar').text(`${percent_completed}%`);
   $('.progress-bar').attr('aria-valuenow', percent_completed);
   $('.matches').text(`${ctx.osscount}/${ctx.total} (${percent_matches}%)`);
-  // update component chart
-  // sort by value
-
+ 
   const sortedLics = Object.entries(ctx.licenses)
     .sort(([, a], [, b]) => b.counter - a.counter)
     .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
@@ -149,7 +147,10 @@ function scan_callback(ctx) {
   $('.scanned-files').text(`${ctx.scanned}`);
   if (ctx.status !== 'DONE') {
   } else {
+    // SCAN DONE
     timerInstance.stop();
+    $('#new-sbom').removeClass('disabled');
+    $('#new-sbom').on('click', scanDirectory);
     $('.download-button').prop('disabled', false);
     $('.download-button').removeClass('disabled');
     $('.refresh button').show();
@@ -294,15 +295,11 @@ function scanDirectory(ev) {
   if (ossChart) {
     ossChart.destroy();
   }
-
   if (vulnChart) {
     vulnChart.destroy();
   }
-  $('.alert').hide()
-  $('.intro').hide();
-  $('.report').hide();
-  $('.ctable').hide();
-  $('.vtable').hide();
+  $('.alert, .intro, .report, .ctable, .vtable').hide()
+  
   $('.download-button').prop('disabled', true);
   $('.download-button').addClass('disabled');
   let options = { properties: ['openDirectory'] };
@@ -324,9 +321,14 @@ function scanDirectory(ev) {
     scanossdir: SCANOSS_DIR,
     downloadsdir: DOWNLOADS_DIR,
   });
+
+  // disable scan button
+  $('#new-sbom').addClass('disabled')
+  $('#new-sbom').off('click');
 }
 
 $(function () {
+  $('.alert').hide();
   $('.report').hide();
   $('.loading').hide();
   $('#new-sbom').on('click', scanDirectory);

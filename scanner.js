@@ -43,6 +43,7 @@ function scan_wfp_worker(counter, wfp) {
 }
 
 request_worker.onmessage = (e) => {
+  
   let json = e.data.json;
   let counter = e.data.counter;
   ctx.scanned += counter;
@@ -129,9 +130,11 @@ function scanFolder (initctx, callback) {
   ctx = initctx;
   ctx.scandir = SCANOSS_DIR + '/' + get_scan_dir(ctx.sourceDir);
 
-  if (!fs.existsSync(ctx.scandir)) {
-    fs.mkdirSync(ctx.scandir);
+  // Remove contents of previous scan.
+  if (fs.existsSync(ctx.scandir)) {
+    fs.rmdirSync(ctx.scandir, { recursive: true });
   }
+  fs.mkdirSync(ctx.scandir);
   // Initialise context
   ctx.status = 'IN_PROGRESS';
   ctx.scanned = 0;

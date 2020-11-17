@@ -95,7 +95,9 @@ function scan_wfp (wfp, counter, file) {
       .then((json) => {
         postMessage({ wfp: wfp, json: json, counter: counter });
         RUNNING = 0;
-        fs.unlinkSync(file);
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file);
+        }
         if (file in RETRY_MAP) {
           delete RETRY_MAP[file];
         }

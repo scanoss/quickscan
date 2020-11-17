@@ -5,6 +5,21 @@ const { remote } = require('electron'),
   WIN = remote.getCurrentWindow();
 const { SCANOSS_DIR, DOWNLOADS_DIR } = require('./renderer')
 
+function saveScanFile (ev, scanfile) {
+  ev.preventDefault();
+  let path = dialog.showSaveDialogSync(WIN, {
+    title: 'Save scan result',
+    defaultPath: `${DOWNLOADS_DIR}/${scanfile}`,
+  });
+  if (!path) {
+    console.log('No save path selected');
+    return;
+  }
+  let scan = ev.currentTarget.dataset['scan'];
+  const jsonfile = `${SCANOSS_DIR}/${scan}/${scanfile}`;
+  fs.copyFileSync(jsonfile, path);
+}
+
 function listScans () {
   const scans = fs.readdirSync(SCANOSS_DIR)
   let tbody = '.table tbody';
@@ -25,46 +40,13 @@ function listScans () {
     ); 
   })
   $('.csv').on('click', (ev) => {
-    ev.preventDefault();
-    let path = dialog.showSaveDialogSync(WIN, {
-      title: 'Save scan report',
-      defaultPath: `${DOWNLOADS_DIR}/sbom.csv`,
-    });
-    if (!path) {
-      console.log('No save path selected');
-      return;
-    }
-    let scan = $(this).data('scan');
-    const csvfile = `${SCANOSS_DIR}/${scan}/sbom.csv`;
-    fs.copyFileSync(csvfile, path);
+    saveScanFile(ev, 'sbom.csv')
   });
   $('.json').on('click', (ev) => {
-    ev.preventDefault();
-    let path = dialog.showSaveDialogSync(WIN, {
-      title: 'Save scan raw result',
-      defaultPath: `${DOWNLOADS_DIR}/result.json`,
-    });
-    if (!path) {
-      console.log('No save path selected');
-      return;
-    }
-    let scan = ev.currentTarget.dataset['scan'];
-    const jsonfile = `${SCANOSS_DIR}/${scan}/scanoss-scan.json`;
-    fs.copyFileSync(jsonfile, path);
+    saveScanFile(ev, 'scanoss-scan.json')
   });
   $('.wfp').on('click', (ev) => {
-    ev.preventDefault();
-    let path = dialog.showSaveDialogSync(WIN, {
-      title: 'Save scan report',
-      defaultPath: `${DOWNLOADS_DIR}/scan.wfp`,
-    });
-    if (!path) {
-      console.log('No save path selected');
-      return;
-    }
-    let scan = ev.currentTarget.dataset['scan'];
-    const wfpfile = `${SCANOSS_DIR}/${scan}/scan.wfp`;
-    fs.copyFileSync(wfpfile, path);
+    saveScanFile(ev, 'scan.wfp')
   });
 
   $('.delete').on('click', (ev) => {
