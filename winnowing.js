@@ -95,7 +95,8 @@ const FILTERED_EXT = [
   '.o',
   '.ico',
   '.wfp',
-  '.dump'
+  '.dump',
+  '.pbtxt'
 ];
 
 const FILTERED_DIRS = [

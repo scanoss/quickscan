@@ -73,6 +73,7 @@ body {
 
 #novulns {
   margin-top: 30px;
+  margin-left: 65px;
   z-index: -100;
   text-align: left;
 }
@@ -91,7 +92,8 @@ body {
 }
 
 .ctable,
-.vtable {
+.vtable,
+.stable {
   margin-top: 15px;
   margin-left: 20px;
   margin-right: 20px;
@@ -111,4 +113,8 @@ body {
   padding-left: 30px;
   padding-right: 30px;
   font-size: 14px;
+}
+
+.back {
+  margin: 10px 10px;
 }

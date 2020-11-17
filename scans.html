@@ -20,40 +20,101 @@
     <a class="navbar-brand" href="#"><img src="quickscan.png" width="150"></a>
     <ul class="nav navbar-nav ml-auto mr-1">
       <li>
-        <a href="index.html" class="btn btn-outline-light my-2 my-sm-0" >RETURN TO SCAN PAGE</a>
+        <a href="index.html" class="btn btn-outline-light my-2 my-sm-0">RETURN TO SCAN PAGE</a>
       </li>
-      
+
     </ul>
 
   </nav>
 
   <div class="container-fluid">
-    <div class="report-body">
-      
-    <div class="row ctable">
-      <div class="col-sm ">
-        <h6>Scan Files</h6>
-        <table class="table table-hover thead-light">
-          <thead>
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">WFP File</th>
-              <th scope="col">Raw Results</th>
-              <th scope="col">CSV Results</th>
-              <th scope="col">Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
+    <div class="report-body scans">
+
+      <div class="row stable ">
+        <div class="col-sm ">
+          <h6>Scan Files</h6>
+          <table class="table table-hover thead-light">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Date</th>
+                <th scope="col">Charts</th>
+                <th scope="col">WFP File</th>
+                <th scope="col">Raw Results</th>
+                <th scope="col">CSV Results</th>
+
+                <th scope="col">Delete</th>
+
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
       </div>
-    
     </div>
+
+    <div class="report-body charts">
+      <div class="back">
+        <a href="scans.html" class="btn btn-outline-dark f-80">Back to scans</a>
+      </div>
+      <div class="row">
+        <div class="col-sm chart">
+          <canvas id="license-chart" width="500" height="400"></canvas>
+        </div>
+        <div class="col-sm chart">
+          <div class="row">
+            <div class="col-sm chart">
+              <canvas id="oss-chart" width="500" height="150"></canvas>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm chart">
+              <h5 id="novulns">No vulnerabilities detected</h5>
+              <canvas id="vuln-chart" width="500" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row ctable">
+        <div class="col-sm ">
+          <h6>Component matches for license <span class="hoverlicense"></span></h6>
+          <table class="table table-hover thead-light">
+            <thead>
+              <tr>
+                <th scope="col">Vendor</th>
+                <th scope="col">Component</th>
+                <th scope="col">Version</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="row vtable">
+        <div class="col-sm ">
+          <h6>Components with <span class="severity"></span> Vulnerabilities</h6>
+          <table class="table table-hover thead-light">
+            <thead>
+              <tr>
+                <th scope="col">Vendor</th>
+                <th scope="col">Component</th>
+                <th scope="col">Version</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
     </div>
   </div>
-  
 
-  
   <script src="./scans.js"></script>
 </body>
 

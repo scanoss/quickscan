@@ -33,6 +33,13 @@ const DOWNLOADS_DIR = app.getPath('downloads');
 module.exports = {
   SCANOSS_DIR,
   DOWNLOADS_DIR,
+  updateCharts,
+  createCharts,
+  destroyCharts,
+  licenseChart,
+  ossChart,
+  vulnChart,
+  assignCtx,
 };
 const scan_worker = new Worker('./scanner.js');
 const timerInstance = new Timer();
@@ -40,6 +47,9 @@ var timerFunction;
 
 var licenseChart, ossChart, vulnChart;
 var globctx;
+function assignCtx(ctx) {
+  globctx = ctx;
+}
 
 const chartColors = {
   red: '#790600',
@@ -60,19 +70,25 @@ const vulnColors = {
   CRITICAL: '#020300',
 };
 
-const severity_rank = ['LOW', 'MODERATE', 'MEDIUM', 'HIGH', 'CRITICAL'].reverse();
+const severity_rank = [
+  'LOW',
+  'MODERATE',
+  'MEDIUM',
+  'HIGH',
+  'CRITICAL',
+].reverse();
 
 scan_worker.onmessage = (e) => {
   scan_callback(e.data);
 };
 
 scan_worker.onerror = (e) => {
-  console.log("Error received in renderer: " + e.message)
-  $('.report').hide()
+  console.log('Error received in renderer: ' + e.message);
+  $('.report').hide();
   $('.loading').hide();
   $('.alert').show();
-  
-}
+  $('#new-sbom').removeClass('disabled');
+};
 
 function update_table(components) {
   let tbody = '.table tbody';
@@ -90,22 +106,22 @@ function update_table(components) {
   }
 }
 
-function updateVulnChart (ctx) {
+function updateVulnChart(ctx) {
   if (ctx.vulns && Object.keys(ctx.vulns).length > 0) {
     $('#novulns').hide();
     let index = 0;
-    let keys = Object.keys(ctx.vulns)
-    vulnChart.data.labels = []
+    let keys = Object.keys(ctx.vulns);
+    vulnChart.data.labels = [];
     let data = [];
     let colors = [];
     for (const severity of severity_rank) {
       if (keys.includes(severity)) {
-        vulnChart.data.labels.push(severity)
-        data.push(ctx.vulns[severity].counter)
-        colors.push(vulnColors[severity])
+        vulnChart.data.labels.push(severity);
+        data.push(ctx.vulns[severity].counter);
+        colors.push(vulnColors[severity]);
       }
     }
-    
+
     vulnChart.data.datasets[0] = {
       data: data,
       backgroundColor: colors,
@@ -115,6 +131,33 @@ function updateVulnChart (ctx) {
     vulnChart.update();
     $('#vuln-chart').show();
   }
+}
+
+function save_ctx(ctx) {
+  let persistedCtx = {
+    vulns: ctx.vulns,
+    licenses: ctx.licenses,
+    total: ctx.total,
+    osscount: ctx.osscount,
+    date: ctx.date,
+  };
+  fs.writeFileSync(`${ctx.scandir}/ctx.json`, JSON.stringify(persistedCtx));
+}
+
+function updateCharts(ctx) {
+  const sortedLics = Object.entries(ctx.licenses)
+    .sort(([, a], [, b]) => b.counter - a.counter)
+    .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
+
+  licenseChart.data.labels = Object.keys(sortedLics).slice(0, 8);
+  licenseChart.data.datasets[0].data = Object.values(sortedLics).slice(0, 8);
+  licenseChart.update();
+
+  ossChart.data.datasets[0].data = [ctx.osscount];
+  ossChart.data.datasets[1].data = [ctx.total - ctx.osscount];
+  ossChart.update();
+
+  updateVulnChart(ctx);
 }
 
 function scan_callback(ctx) {
@@ -130,20 +173,9 @@ function scan_callback(ctx) {
   $('.progress-bar').text(`${percent_completed}%`);
   $('.progress-bar').attr('aria-valuenow', percent_completed);
   $('.matches').text(`${ctx.osscount}/${ctx.total} (${percent_matches}%)`);
- 
-  const sortedLics = Object.entries(ctx.licenses)
-    .sort(([, a], [, b]) => b.counter - a.counter)
-    .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
 
-  licenseChart.data.labels = Object.keys(sortedLics).slice(0, 8);
-  licenseChart.data.datasets[0].data = Object.values(sortedLics).slice(0, 8);
-  licenseChart.update();
+  updateCharts(ctx);
 
-  ossChart.data.datasets[0].data = [ctx.osscount];
-  ossChart.data.datasets[1].data = [ctx.total - ctx.osscount];
-  ossChart.update();
-
-  updateVulnChart(ctx)
   $('.scanned-files').text(`${ctx.scanned}`);
   if (ctx.status !== 'DONE') {
   } else {
@@ -166,18 +198,11 @@ function scan_callback(ctx) {
       }
       fs.copyFileSync(ctx.csvbom, path);
     });
+    save_ctx(ctx);
   }
 }
 
-function initReport(ctx) {
-  $('.report').show();
-  $('.scanfolder').text(ctx.scandir);
-  $('.progress-bar').css('width', `0%`);
-  $('.progress-bar').text(`$0%`);
-  $('.progress-bar').attr('aria-valuenow', 0);
-  $('.matches').text('0');
-  $('#vuln-chart').hide();
-
+function createCharts() {
   licenseChart = new Chart($('#license-chart'), {
     type: 'pie',
     data: {
@@ -236,8 +261,16 @@ function initReport(ctx) {
     type: 'horizontalBar',
     data: {
       datasets: [
-        { data: [0], backgroundColor: [chartColors.green], label: 'OSS Match' },
-        { data: [0], backgroundColor: [chartColors.orange], label: 'No Match' },
+        {
+          data: [0],
+          backgroundColor: [chartColors.green],
+          label: 'OSS Match',
+        },
+        {
+          data: [0],
+          backgroundColor: [chartColors.orange],
+          label: 'No Match',
+        },
       ],
       labels: [''],
     },
@@ -252,7 +285,7 @@ function initReport(ctx) {
     },
     options: {
       animation: {
-        duration: 0
+        duration: 0,
       },
       title: {
         display: true,
@@ -284,6 +317,45 @@ function initReport(ctx) {
   });
 }
 
+function initReport(ctx) {
+  $('.report').show();
+  $('.scanfolder').text(ctx.scandir);
+  $('.progress-bar').css('width', `0%`);
+  $('.progress-bar').text(`$0%`);
+  $('.progress-bar').attr('aria-valuenow', 0);
+  $('.matches').text('0');
+  $('#vuln-chart').hide();
+  createCharts();
+}
+
+function destroyCharts() {
+  if (licenseChart) {
+    licenseChart.destroy();
+  }
+  if (ossChart) {
+    ossChart.destroy();
+  }
+  if (vulnChart) {
+    vulnChart.destroy();
+  }
+}
+
+function formatDate (date) {
+  let formatted_date =
+    date.getFullYear() +
+    '-' +
+    (date.getMonth() + 1) +
+    '-' +
+    date.getDate() +
+    ' ' +
+    date.getHours() +
+    ':' +
+    date.getMinutes() +
+    ':' +
+    date.getSeconds(); 
+  return formatted_date
+}
+
 function scanDirectory(ev) {
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
@@ -298,8 +370,8 @@ function scanDirectory(ev) {
   if (vulnChart) {
     vulnChart.destroy();
   }
-  $('.alert, .intro, .report, .ctable, .vtable').hide()
-  
+  $('.alert, .intro, .report, .ctable, .vtable').hide();
+
   $('.download-button').prop('disabled', true);
   $('.download-button').addClass('disabled');
   let options = { properties: ['openDirectory'] };
@@ -312,7 +384,11 @@ function scanDirectory(ev) {
 
   $('.loading').show();
   $('.counter').html('0');
-  let ctx = { total: scanner.countFiles(dir[0]), sourceDir: dir[0] };
+  let ctx = {
+    total: scanner.countFiles(dir[0]),
+    sourceDir: dir[0],
+    date: formatDate(new Date()),
+  };
   $('.counter').html(ctx.total);
 
   // Using web workers
@@ -323,7 +399,7 @@ function scanDirectory(ev) {
   });
 
   // disable scan button
-  $('#new-sbom').addClass('disabled')
+  $('#new-sbom').addClass('disabled');
   $('#new-sbom').off('click');
 }
 
