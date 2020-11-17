@@ -87,6 +87,8 @@ const template = [
   {
     role: 'help',
     submenu: [
+      ...(isMac
+      ? [] : [{ role: 'about' }]),
       {
         label: 'SCANOSS Home',
         click: async () => {
