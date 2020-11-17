@@ -19,6 +19,7 @@ const fs = require('fs');
 const os = require('os');
 const winnowing = require('./winnowing');
 const path = require('path');
+const { request } = require('http');
 
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
@@ -57,6 +58,10 @@ request_worker.onmessage = (e) => {
   json = ''
   postMessage(ctx);
 };
+
+request_worker.onerror = (e) => {
+  throw e
+}
 
 function get_scan_dir(path) {
   return path.match(/[^\\\/]+$/);

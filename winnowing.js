@@ -66,7 +66,7 @@ const FILTERED_EXT = [
   '.yaml',
   '.yml',
   '.txt',
-  '.json',
+  '.json','.jsonld','.gradle',
   '.gif',
   '.md',
   '.test',
@@ -106,6 +106,7 @@ const FILTERED_DIRS = [
   '/node_modules',
   '/vendor',
   '/.github',
+  '/.vscode/'
 ];
 
 const crypto = require('crypto');

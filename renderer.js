@@ -66,6 +66,14 @@ scan_worker.onmessage = (e) => {
   scan_callback(e.data);
 };
 
+scan_worker.onerror = (e) => {
+  console.log("Error received in renderer: " + e.message)
+  $('.report').hide()
+  $('.loading').hide();
+  $('.alert').show();
+  
+}
+
 function update_table(components) {
   let tbody = '.table tbody';
   $(tbody).html('');
@@ -290,6 +298,7 @@ function scanDirectory(ev) {
   if (vulnChart) {
     vulnChart.destroy();
   }
+  $('.alert').hide()
   $('.intro').hide();
   $('.report').hide();
   $('.ctable').hide();

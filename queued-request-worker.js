@@ -15,11 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+/**
+ * queue-request-worker.
+ *
+ * This module implements a web worker that queues http requests to ensure that the requests are handled
+ * sequentially.
+ *
+ */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
+const TIMEOUT = 15000;
+const MAX_RETRIES = 3;
+const RETRY_MAP = {};
 
 var RUNNING = 0;
 var CHUNK_SIZE = 10;
@@ -34,7 +45,6 @@ function queue_scan(wfp, counter) {
     fs.mkdirSync(QUEUE_DIR);
   }
   let filename = `${QUEUE_DIR}/${new Date().getTime()}.json`;
-  console.log('Add to queue: ' + filename);
   fs.writeFileSync(filename, JSON.stringify({ wfp: wfp, counter: counter }));
   next();
 }
@@ -52,40 +62,64 @@ function next() {
   }
 }
 
-function scan_wfp(wfp, counter, file) {
+function scan_wfp (wfp, counter, file) {
   RUNNING = 1;
   const data = new FormData();
   data.append('filename', new Blob([wfp]), 'data.wfp');
-
-  fetch('https://osskb.org/api/scan/direct', {
-    method: 'post',
-    body: data,
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.text();
-      } else {
-        throw response;
-      }
-    })
-    .then((responseBodyAsText) => {
-      try {
-        const bodyAsJson = JSON.parse(responseBodyAsText);
-        return bodyAsJson;
-      } catch (e) {
-        console.log('Unparseable body: ' + responseBodyAsText);
-        Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
-      }
-    })
-    .then((json) => {
-      postMessage({ wfp: wfp, json: json, counter: counter });
-      RUNNING = 0;
-      fs.unlinkSync(file);
-      next();
-    })
-    .catch((error) => {
-      RUNNING = 0;
-      console.log(error);
-      next();
-    });
+  
+    Promise.race([
+      fetch('https://osskb.org/api/scan/direct', {
+        method: 'post',
+        body: data,
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), TIMEOUT)
+      ),
+    ])
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw response;
+        }
+      })
+      .then((responseBodyAsText) => {
+        try {
+          const bodyAsJson = JSON.parse(responseBodyAsText);
+          return bodyAsJson;
+        } catch (e) {
+          console.log('Unparseable body: ' + responseBodyAsText);
+          Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
+        }
+      })
+      .then((json) => {
+        postMessage({ wfp: wfp, json: json, counter: counter });
+        RUNNING = 0;
+        fs.unlinkSync(file);
+        if (file in RETRY_MAP) {
+          delete RETRY_MAP[file];
+        }
+        next();
+      }).catch((e) => {
+        RUNNING = 0;
+        if (e.message === 'Timeout') {
+          if (!(file in RETRY_MAP)) {
+            RETRY_MAP[file] = 0;
+          }
+          if (RETRY_MAP[file] <= MAX_RETRIES) {
+            RETRY_MAP[file]++;
+            next();
+          } else {           
+            setTimeout(() => {
+              throw e;
+            });
+          }
+        } else {
+          setTimeout(() => {
+            throw e;
+          });
+        }
+        
+      });
+  
 }
