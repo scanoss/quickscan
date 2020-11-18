@@ -20,6 +20,9 @@ const { app, BrowserWindow, globalShortcut, Menu } = require('electron');
 const path = require('path')
 const isMac = process.platform === 'darwin';
 
+// Prevent Linux crash
+app.commandLine.appendSwitch('--no-sandbox');
+
 const template = [
   // { role: 'appMenu' }
   ...(isMac
@@ -87,8 +90,13 @@ const template = [
   {
     role: 'help',
     submenu: [
-      ...(isMac
-      ? [] : [{ role: 'about' }]),
+      ...(isMac ? [] : [{ role: 'about' }]),
+      {
+        label: 'Help/FAQ',
+        click: async () => {
+          BrowserWindow.getFocusedWindow().loadFile('help.html');
+        },
+      },
       {
         label: 'SCANOSS Home',
         click: async () => {

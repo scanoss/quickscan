@@ -115,6 +115,10 @@ body {
   font-size: 14px;
 }
 
-.back {
-  margin: 10px 10px;
+.report-title {
+  margin: 10px 30px;
+}
+
+.disclaimer {
+  font-size: 75%;
 }

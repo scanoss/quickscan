@@ -183,22 +183,10 @@ function scan_callback(ctx) {
     timerInstance.stop();
     $('#new-sbom').removeClass('disabled');
     $('#new-sbom').on('click', scanDirectory);
-    $('.download-button').prop('disabled', false);
-    $('.download-button').removeClass('disabled');
+    
+    $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
 
-    $('.download-button').on('click', (ev) => {
-      ev.preventDefault();
-      let path = dialog.showSaveDialogSync(WIN, {
-        title: 'Save scan results',
-        defaultPath: `${DOWNLOADS_DIR}/sbom.csv`,
-      });
-      if (!path) {
-        console.log('No save path selected');
-        return;
-      }
-      fs.copyFileSync(ctx.csvbom, path);
-    });
     save_ctx(ctx);
   }
 }
@@ -395,8 +383,8 @@ function scanDirectory(ev) {
   });
   
   // disable buttons
-  $('.download-button').off('click')
-  $('.download-button').addClass('disabled');
+  $('.reports-btn').off('click');
+  $('.reports-btn').addClass('disabled');
   $('#new-sbom').addClass('disabled');
   $('#new-sbom').off('click');
 }

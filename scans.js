@@ -32,6 +32,7 @@ function opencharts (ev) {
   destroyCharts()
   $('.scans').hide()
   let scan = ev.currentTarget.dataset['scan'];
+  $('.report-title').text(scan)
   const scandir = `${SCANOSS_DIR}/${scan}`;
   ctx = JSON.parse(fs.readFileSync(`${scandir}/ctx.json`));
   assignCtx(ctx)
