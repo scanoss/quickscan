@@ -19,18 +19,35 @@
 const { app, BrowserWindow, globalShortcut, Menu } = require('electron');
 const path = require('path')
 const isMac = process.platform === 'darwin';
+const openAboutWindow = require('electron-about-window').default;
+const join = require('path').join;
+
 
 // Prevent Linux crash
 app.commandLine.appendSwitch('--no-sandbox');
+
 
 const template = [
   // { role: 'appMenu' }
   ...(isMac
     ? [
         {
-          label: app.name,
+          label: 'Quickscan',
           submenu: [
-            { role: 'about' },
+            {
+              label: `About Quickscan`,
+              click: async () => {
+                openAboutWindow({
+                  icon_path: join(app.getAppPath(), 'icon.png'),
+                  product_name: 'Quickscan',
+                  copyright: 'Copyright © 2020 SCANOSS.COM',
+                  description:
+                    'Scan any given directory for Open Source code, and automatically generate a demo-SBOM containing licenses, copyright statements and vulnerabilities.',
+                  homepage: 'https://scanoss.com',
+                  license: 'GPL-2.0+',
+                });
+              },
+            },
             { type: 'separator' },
             { role: 'services' },
             { type: 'separator' },
@@ -90,9 +107,26 @@ const template = [
   {
     role: 'help',
     submenu: [
-      ...(isMac ? [] : [{ role: 'about' }]),
+      ...(isMac
+        ? []
+        : [
+            {
+              label: `About Quickscan`,
+              click: async () => {
+                openAboutWindow({
+                  icon_path: join(app.getAppPath(), 'icon.png'),
+                  product_name: 'Quickscan',
+                  copyright: 'Copyright © 2020 SCANOSS.COM',
+                  description:
+                    'Scan any given directory for Open Source code, and automatically generate a demo-SBOM containing licenses, copyright statements and vulnerabilities.',
+                  homepage: 'https://scanoss.com',
+                  license: 'GPL-2.0+',
+                });
+              },
+            },
+          ]),
       {
-        label: 'Help/FAQ',
+        label: 'Help - FAQ',
         click: async () => {
           BrowserWindow.getFocusedWindow().loadFile('help.html');
         },
@@ -128,6 +162,7 @@ function createWindow () {
       nodeIntegration: true,
       enableRemoteModule: true,
       nodeIntegrationInWorker: true,
+      sandbox: false,
     },
   });
 

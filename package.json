@@ -1,6 +1,6 @@
 {
   "name": "scanoss-quickscan",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
@@ -8,13 +8,14 @@
     "pack": "electron-builder --dir",
     "dist": "rm -rf dist/* && electron-builder -mwl",
     "dist-linux": "electron-builder -l",
-    "dist-mac": "electron-builder -m"
+    "dist-mac": "electron-builder -m",
+    "dist-win": "electron-builder -w"
   },
   "repository": "https://github.com/scanoss/quickscan",
   "author": "SCANOSS <info@scanoss.com>",
   "license": "GPL-2.0+",
   "devDependencies": {
-    "electron": "^10.1.3",
+    "electron": "^11.0.1",
     "electron-builder": "^22.9.1",
     "electron-notarize": "^1.0.0"
   },
@@ -23,27 +24,42 @@
     "bootstrap": "^4.5.3",
     "chart.js": "^2.9.4",
     "easytimer.js": "^4.3.0",
+    "electron-about-window": "^1.13.4",
     "jquery": "^3.5.1",
     "popper.js": "^1.16.1"
   },
   "build": {
     "appId": "com.scanoss.quickscan",
-    "productName": "SCANOSS Quickscan",
+    "productName": "Quickscan",
     "copyright": "Copyright © 2020 SCANOSS.COM",
+    "afterPack": "build/afterpack.js",
+    "afterSign": "scripts/notarize.js",
+    "extraResources": [
+      {
+        "from": "build/launcher-script.sh",
+        "to": "launcher-script.sh"
+      },
+      {
+        "from": "build/icon.png",
+        "to": "build/icon.png"
+      }
+    ],
     "linux": {
       "target": [
         "deb",
         "rpm"
       ],
       "vendor": "SCANOSS",
-      "icon": "icons/512x512.png",
+      "icon": "icons/",
       "category": "Utility",
       "executableName": "scanoss-quickscan",
+      "executableArgs": [
+        "--no-sandbox"
+      ],
       "desktop": {
-        "Name": "SCANOSS Quickscan",
-        "Icon": "scanoss-quickscan",
+        "Name": "Quickscan",
         "Type": "Application",
-        "Categories": "Utility"
+        "Categories": "Development"
       }
     },
     "mac": {
@@ -58,7 +74,6 @@
     },
     "dmg": {
       "sign": false
-    },
-    "afterSign": "scripts/notarize.js"
+    }
   }
 }
