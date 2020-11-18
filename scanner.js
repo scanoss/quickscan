@@ -43,26 +43,25 @@ function scan_wfp_worker(counter, wfp) {
 }
 
 request_worker.onmessage = (e) => {
-  
   let json = e.data.json;
   let counter = e.data.counter;
   ctx.scanned += counter;
   let done = ctx.scanned >= ctx.total;
-  ctx.wfp = e.data.wfp
+  ctx.wfp = e.data.wfp;
   update_licenses(ctx, json);
-  update_vulns(ctx, json)
+  update_vulns(ctx, json);
   append_to_results(ctx, json, done);
   if (done) {
     console.log('Scan done');
     ctx.status = 'DONE';
   }
-  json = ''
+  json = '';
   postMessage(ctx);
 };
 
 request_worker.onerror = (e) => {
-  throw e
-}
+  throw e;
+};
 
 function get_scan_dir(path) {
   return path.match(/[^\\\/]+$/);
@@ -73,11 +72,16 @@ function countFiles(dir) {
   const files = fs.readdirSync(dir);
   files.forEach((file) => {
     var filepath = path.join(dir, file);
-    const stats = fs.statSync(filepath);
-    if (stats.isDirectory() && !winnowing.is_filtered_dir(filepath)) {
+    const stats = fs.lstatSync(filepath);
+    if (
+      stats.isDirectory() &&
+      !stats.isSymbolicLink() &&
+      !winnowing.is_filtered_dir(filepath)
+    ) {
       index += countFiles(filepath);
     } else if (
       stats.isFile() &&
+      !stats.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(filepath))
     ) {
       index++;
@@ -89,10 +93,16 @@ function countFiles(dir) {
 async function* walk(dir) {
   for await (const d of await fs.promises.opendir(dir)) {
     const entry = path.join(dir, d.name);
-    if (d.isDirectory() && !winnowing.is_filtered_dir(entry))
+    // const stats = fs.lstatSync(filepath);
+    if (
+      d.isDirectory() &&
+      !d.isSymbolicLink() &&
+      !winnowing.is_filtered_dir(entry)
+    )
       yield* walk(entry);
     else if (
       d.isFile() &&
+      !d.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(entry))
     )
       yield entry;
@@ -121,7 +131,7 @@ async function recursive_scan(dir) {
   return counter;
 }
 
-function scanFolder (initctx, callback) {
+function scanFolder(initctx, callback) {
   fs.rmdirSync(QUEUE_DIR, { recursive: true });
   // Initialise directories
   if (!fs.existsSync(SCANOSS_DIR)) {
@@ -188,7 +198,7 @@ function append_to_results(ctx, json, done) {
     } else {
       fs.appendFileSync(ctx.resultfile, `,`);
     }
-    fs.appendFileSync(ctx.wfpfile, `${ctx.wfp}${os.EOL}`)
+    fs.appendFileSync(ctx.wfpfile, `${ctx.wfp}${os.EOL}`);
   }
 }
 
@@ -227,13 +237,12 @@ function update_licenses(ctx, json) {
           : `${val.version}..${val.latest}`;
       // Only look at first license.
       if (val.licenses && val.licenses[0]) {
-        
         let license = val.licenses[0].name;
         if (!(license in ctx.licenses)) {
           ctx.licenses[license] = { counter: 0, components: {} };
         }
         let lic = ctx.licenses[license];
-        
+
         if (!(comp_id in lic.components)) {
           lic.counter++;
           lic.components[comp_id] = versions;
@@ -243,12 +252,12 @@ function update_licenses(ctx, json) {
   }
 }
 
-function update_vulns (ctx, json) {
+function update_vulns(ctx, json) {
   if (!ctx.vulns) {
-    ctx.vulns = {}
+    ctx.vulns = {};
   }
   for (key in json) {
-    let value = json[key]
+    let value = json[key];
     value.forEach((match) => {
       let comp_id = `${match.vendor}:${match.component}`;
       let versions =
@@ -259,15 +268,15 @@ function update_vulns (ctx, json) {
         match.vulnerabilities.forEach((vuln) => {
           let severity = vuln.severity;
           if (!(vuln.severity in ctx.vulns)) {
-            ctx.vulns[severity] = { counter: 0, components: {} }
+            ctx.vulns[severity] = { counter: 0, components: {} };
           }
           if (!(comp_id in ctx.vulns[severity].components)) {
-            ctx.vulns[severity].counter++
+            ctx.vulns[severity].counter++;
             ctx.vulns[severity].components[comp_id] = versions;
           }
-        })
+        });
       }
-    })
+    });
   }
 }
 

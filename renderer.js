@@ -186,6 +186,7 @@ function scan_callback(ctx) {
     $('.download-button').prop('disabled', false);
     $('.download-button').removeClass('disabled');
     $('.refresh button').show();
+
     $('.download-button').on('click', (ev) => {
       ev.preventDefault();
       let path = dialog.showSaveDialogSync(WIN, {
@@ -227,9 +228,6 @@ function createCharts() {
   });
 
   var barOptions_stacked = {
-    tooltips: {
-      enabled: false,
-    },
     scales: {
       xAxes: [
         {
@@ -372,16 +370,14 @@ function scanDirectory(ev) {
   }
   $('.alert, .intro, .report, .ctable, .vtable').hide();
 
-  $('.download-button').prop('disabled', true);
-  $('.download-button').addClass('disabled');
   let options = { properties: ['openDirectory'] };
-
+  
   let dir = dialog.showOpenDialogSync(options);
   if (dir === undefined) {
     console.log('No directory selected');
     return;
   }
-
+  
   $('.loading').show();
   $('.counter').html('0');
   let ctx = {
@@ -390,15 +386,17 @@ function scanDirectory(ev) {
     date: formatDate(new Date()),
   };
   $('.counter').html(ctx.total);
-
+  
   // Using web workers
   scan_worker.postMessage({
     ctx: ctx,
     scanossdir: SCANOSS_DIR,
     downloadsdir: DOWNLOADS_DIR,
   });
-
-  // disable scan button
+  
+  // disable buttons
+  $('.download-button').off('click')
+  $('.download-button').addClass('disabled');
   $('#new-sbom').addClass('disabled');
   $('#new-sbom').off('click');
 }
