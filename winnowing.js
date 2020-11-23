@@ -59,14 +59,19 @@ a list of WFP fingerprints with their corresponding line numbers.
 //  List of extensions that are ignored
 const FILTERED_EXT = [
   '',
-  '.png', '.pem','.crt','cnf',
+  '.png',
+  '.pem',
+  '.crt',
+  'cnf',
   '.html',
   '.xml',
   '.svg',
   '.yaml',
   '.yml',
   '.txt',
-  '.json','.jsonld','.gradle',
+  '.json',
+  '.jsonld',
+  '.gradle',
   '.gif',
   '.md',
   '.test',
@@ -97,18 +102,20 @@ const FILTERED_EXT = [
   '.wfp',
   '.dump',
   '.pbtxt',
-  '.doc','.xls','.ppt'
+  '.doc',
+  '.xls',
+  '.ppt',
 ];
 
 const FILTERED_DIRS = [
-  '/.git/',
-  '/.svn/',
-  '/.eggs/',
+  '.git',
+  '.svn',
+  '.eggs',
   '__pycache__',
-  '/node_modules',
-  '/vendor',
-  '/.github',
-  '/.vscode/'
+  'node_modules',
+  'vendor',
+  '.github',
+  '.vscode',
 ];
 
 const crypto = require('crypto');
@@ -159,7 +166,7 @@ function min_hex_array(array) {
 
 function is_filtered_dir(dir) {
   for (let i = 0; i < FILTERED_DIRS.length; i++) {
-    if (dir.includes(FILTERED_DIRS[i])) {
+    if (dir.includes(path.sep + FILTERED_DIRS[i]+ path.sep)) {
       return true;
     }
   }
@@ -171,7 +178,6 @@ function is_filtered_dir(dir) {
  * @param {string} file The name of the file
  */
 function wfp_for_file(file, filename) {
-  
   let contents = fs.readFileSync(file);
 
   let file_md5 = crypto.createHash('md5').update(contents).digest('hex');
@@ -180,8 +186,7 @@ function wfp_for_file(file, filename) {
   return wfp;
 }
 
-
-function calc_wfp (contents) {
+function calc_wfp(contents) {
   let gram = '';
   let window = [];
   let normalized = 0;
