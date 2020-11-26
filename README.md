@@ -1,5 +1,5 @@
  
-<img alt="SCANOSS Quickscan Logo" width=250 src="./quickscan.png" style="background-color:#790600"/>
+<img alt="SCANOSS Quickscan Logo" width=250 src="./logo.png"/>
 
 ## What is SCANOSS Quickscan?
 It is a tool that demonstrates scanning source code against <a href="https://osskb.org">osskb.org</a>.
