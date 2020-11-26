@@ -321,7 +321,7 @@ function createCharts() {
 
 function initReport(ctx) {
   $('.report').show();
-  $('.scanfolder').text(ctx.scandir);
+  $('.scanfolder').text(ctx.sourceDir);
   $('.progress-bar').css('width', `0%`);
   $('.progress-bar').text(`$0%`);
   $('.progress-bar').attr('aria-valuenow', 0);

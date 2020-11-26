@@ -6,6 +6,8 @@ It is a tool that demonstrates scanning source code against <a href="https://oss
 SCANOSS Quickscan scans source code against a knowledge base representing the entire OSS community. The results of the scan contain OSS matches
 (full file or snippet) of the scanned code against OSS components.
 
+<img alt="Screenshot" width=600 src="./screenshot.png"/>
+
 
 ## How does it work? 
 Select a folder containing source code files and the application will generate fingerprints and send them to the OSSKB API for scanning. It is important to stress that no source code is sent to the osskb.org API. The client extracts hashes from the source code using an open source algorithm. A good explanation of the algorithm as well as an implementation can be found here: 
