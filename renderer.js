@@ -84,10 +84,10 @@ scan_worker.onmessage = (e) => {
 
 scan_worker.onerror = (e) => {
   console.log('Error received in renderer: ' + e.message);
-  $('.report').hide();
   $('.loading').hide();
   $('.alert').show();
   $('#new-sbom').removeClass('disabled');
+  $('.reports-btn').removeClass('disabled');
 };
 
 function update_table(components) {
@@ -99,6 +99,22 @@ function update_table(components) {
     let parts = key.split(':');
     $(tbody).append(
       `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${value}</td></tr>`
+    );
+    if (index === 10) {
+      return;
+    }
+  }
+}
+
+function update_vuln_table(components) {
+  let tbody = '.table tbody';
+  $(tbody).html('');
+  let index = 0;
+  for (const [key, value] of Object.entries(components)) {
+    index++;
+    let parts = key.split(':');
+    $(tbody).append(
+      `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${value.versions}</td><td>${[...value.cves].join(',')}</td></tr>`
     );
     if (index === 10) {
       return;
@@ -183,7 +199,7 @@ function scan_callback(ctx) {
     timerInstance.stop();
     $('#new-sbom').removeClass('disabled');
     $('#new-sbom').on('click', scanDirectory);
-    
+
     $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
 
@@ -294,7 +310,7 @@ function createCharts() {
         if (elements.length > 0) {
           let severity = elements[0]._chart.data.labels[elements[0]._index];
           $('.severity').text(severity);
-          update_table(globctx.vulns[severity].components);
+          update_vuln_table(globctx.vulns[severity].components);
           $('.vtable').show();
           $('.ctable').hide();
         }
@@ -326,7 +342,7 @@ function destroyCharts() {
   }
 }
 
-function formatDate (date) {
+function formatDate(date) {
   let formatted_date =
     date.getFullYear() +
     '-' +
@@ -338,8 +354,8 @@ function formatDate (date) {
     ':' +
     date.getMinutes() +
     ':' +
-    date.getSeconds(); 
-  return formatted_date
+    date.getSeconds();
+  return formatted_date;
 }
 
 function scanDirectory(ev) {
@@ -359,13 +375,13 @@ function scanDirectory(ev) {
   $('.alert, .intro, .report, .ctable, .vtable').hide();
 
   let options = { properties: ['openDirectory'] };
-  
+
   let dir = dialog.showOpenDialogSync(options);
   if (dir === undefined) {
     console.log('No directory selected');
     return;
   }
-  
+
   $('.loading').show();
   $('.counter').html('0');
   let ctx = {
@@ -374,14 +390,14 @@ function scanDirectory(ev) {
     date: formatDate(new Date()),
   };
   $('.counter').html(ctx.total);
-  
+
   // Using web workers
   scan_worker.postMessage({
     ctx: ctx,
     scanossdir: SCANOSS_DIR,
     downloadsdir: DOWNLOADS_DIR,
   });
-  
+
   // disable buttons
   $('.reports-btn').off('click');
   $('.reports-btn').addClass('disabled');

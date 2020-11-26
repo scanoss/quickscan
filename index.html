@@ -97,21 +97,15 @@
     </div>
   </div>
 
-  <div class="container-fluid alert">
-    <div class="report-body">
-      <div class="alert-content">
-        <div class="alert alert-danger" role="alert">
-          There was an issue scanning this folder. Please try again. 
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-
-
   <div id="report" class="report">
     <div class="container-fluid">
+      <div class="alert">
+        <div class="alert alert-danger" role="alert">
+          There was an issue scanning this folder. Probably due to network connectivity. The partial report of this scan is
+          available in the reports page. You can help us improve this tool by reporting this issue at <a
+            href="mailto:support@scanoss.com">support@scanoss.com</a>
+        </div>
+      </div>
       <div class="row" id="report-head">
         <div class="progress">
           <div class="progress-bar progress-bar-custom" role="progressbar" aria-valuenow="0" aria-valuemin="0"
@@ -176,6 +170,7 @@
                   <th scope="col">Vendor</th>
                   <th scope="col">Component</th>
                   <th scope="col">Version</th>
+                  <th scope="col">CVE List</th>
                 </tr>
               </thead>
               <tbody>

@@ -56,6 +56,9 @@ file is the MD5 hash, file length and file path being fingerprinted, followed by
 a list of WFP fingerprints with their corresponding line numbers.
 */
 
+const isWin = process.platform === 'win32';
+const pathSeparator = isWin ? '\\' : '/';
+
 //  List of extensions that are ignored
 const FILTERED_EXT = [
   '',
@@ -164,9 +167,10 @@ function min_hex_array(array) {
   return min;
 }
 
-function is_filtered_dir(dir) {
+function is_filtered_dir(dir, sep = pathSeparator) {
   for (let i = 0; i < FILTERED_DIRS.length; i++) {
-    if (dir.includes(path.sep + FILTERED_DIRS[i]+ path.sep)) {
+    let formatted_filter = sep + FILTERED_DIRS[i] + sep;
+    if (dir.includes(formatted_filter)) {
       return true;
     }
   }
@@ -212,7 +216,6 @@ function calc_wfp(contents) {
 
       if (gram.length >= GRAM) {
         gram_crc32 = crc32c_hex(gram);
-        // console.log("gram:"+gram+", gram_crc32: "+gram_crc32)
         window.push(gram_crc32);
 
         if (window.length >= WINDOW) {
@@ -227,9 +230,6 @@ function calc_wfp(contents) {
             );
             let crc_hex = crc32c_for_bytes_hex(min_hash_bytes_le);
 
-            // console.log(
-            //   `gram: ${gram}, min_hash:${min_hash}, crc_hex:${crc_hex}`
-            // );
             if (last_line != line) {
               if (output.length > 0) {
                 wfp += output + '\n';

@@ -28,7 +28,7 @@ const os = require('os');
 const path = require('path');
 
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
-const TIMEOUT = 15000;
+const TIMEOUT = 30000;
 const MAX_RETRIES = 3;
 const RETRY_MAP = {};
 

@@ -272,8 +272,15 @@ function update_vulns(ctx, json) {
           }
           if (!(comp_id in ctx.vulns[severity].components)) {
             ctx.vulns[severity].counter++;
-            ctx.vulns[severity].components[comp_id] = versions;
-          }
+            cves = new Set()
+            cves.add(vuln.CVE)
+            ctx.vulns[severity].components[comp_id] = {
+              versions: versions,
+              cves: cves
+            }
+          } else {
+            ctx.vulns[severity].components[comp_id].cves.add(vuln.CVE);
+          } 
         });
       }
     });
