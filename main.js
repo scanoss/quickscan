@@ -126,7 +126,7 @@ const template = [
             },
           ]),
       {
-        label: 'Help - FAQ',
+        label: 'FAQ',
         click: async () => {
           BrowserWindow.getFocusedWindow().loadFile('help.html');
         },
