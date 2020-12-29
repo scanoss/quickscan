@@ -61,7 +61,6 @@ const pathSeparator = isWin ? '\\' : '/';
 
 //  List of extensions that are ignored
 const FILTERED_EXT = [
-  '',
   '.png',
   '.pem',
   '.crt',
