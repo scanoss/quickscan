@@ -24,7 +24,7 @@ const { request } = require('http');
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
-var CHUNK_SIZE = 20;
+var CHUNK_SIZE = 40;
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
 
 var ctx = {};
