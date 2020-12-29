@@ -87,7 +87,9 @@ scan_worker.onerror = (e) => {
   $('.loading').hide();
   $('.alert').show();
   $('#new-sbom').removeClass('disabled');
+  $('#new-sbom').on('click', scanDirectory);
   $('.reports-btn').removeClass('disabled');
+  timerInstance.stop();
 };
 
 function update_table(components) {
@@ -113,8 +115,9 @@ function update_vuln_table(components) {
   for (const [key, value] of Object.entries(components)) {
     index++;
     let parts = key.split(':');
+    let cves = value.cves === undefined ? []:[...value.cves]
     $(tbody).append(
-      `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${value.versions}</td><td>${[...value.cves].join(',')}</td></tr>`
+      `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${value.versions}</td><td>${cves.join(',')}</td></tr>`
     );
     if (index === 10) {
       return;
