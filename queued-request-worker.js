@@ -37,91 +37,78 @@ var CHUNK_SIZE = 10;
 
 onmessage = (e) => {
   CHUNK_SIZE = e.data.chunk;
-  queue_scan(e.data.wfp, e.data.counter);
+  run_scan(e.data.file, e.data.context);
 };
 
-function queue_scan(wfp, counter) {
-  if (!fs.existsSync(QUEUE_DIR)) {
-    fs.mkdirSync(QUEUE_DIR);
-  }
-  let filename = `${QUEUE_DIR}/${new Date().getTime()}.json`;
-  fs.writeFileSync(filename, JSON.stringify({ wfp: wfp, counter: counter }));
-  next();
-}
-
-function next() {
+function run_scan(filepath, context) {
   if (RUNNING) {
     return;
   }
-  const files = fs.readdirSync(QUEUE_DIR);
-  if (files.length > 0) {
-    let file = files.sort()[0];
-    var filepath = path.join(QUEUE_DIR, file);
-    let json = JSON.parse(fs.readFileSync(filepath));
-    scan_wfp(json.wfp, json.counter, filepath);
-  }
+
+  let json = JSON.parse(fs.readFileSync(filepath));
+  scan_wfp(json.wfp, json.counter, filepath, context);
 }
 
-function scan_wfp (wfp, counter, file) {
+function scan_wfp(wfp, counter, file, context) {
   RUNNING = 1;
   const data = new FormData();
   data.append('filename', new Blob([wfp]), 'data.wfp');
-  
-    Promise.race([
-      fetch('https://osskb.org/api/scan/direct', {
-        method: 'post',
-        body: data,
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), TIMEOUT)
-      ),
-    ])
-      .then((response) => {
-        if (response.ok) {
-          return response.text();
-        } else {
-          throw response;
+  if (context) {
+    data.append('context', context);
+  }
+  Promise.race([
+    fetch('https://osskb.org/api/scan/direct', {
+      method: 'post',
+      body: data,
+    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), TIMEOUT)
+    ),
+  ])
+    .then((response) => {
+      if (response.ok) {
+        return response.text();
+      } else {
+        throw response;
+      }
+    })
+    .then((responseBodyAsText) => {
+      try {
+        const bodyAsJson = JSON.parse(responseBodyAsText);
+        return bodyAsJson;
+      } catch (e) {
+        console.log('Unparseable body: ' + responseBodyAsText);
+        Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
+      }
+    })
+    .then((json) => {
+      postMessage({ wfp: wfp, json: json, counter: counter });
+      RUNNING = 0;
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file);
+      }
+      if (file in RETRY_MAP) {
+        delete RETRY_MAP[file];
+      }
+    })
+    .catch((e) => {
+      RUNNING = 0;
+      if (e.message === 'Timeout') {
+        if (!(file in RETRY_MAP)) {
+          RETRY_MAP[file] = 0;
         }
-      })
-      .then((responseBodyAsText) => {
-        try {
-          const bodyAsJson = JSON.parse(responseBodyAsText);
-          return bodyAsJson;
-        } catch (e) {
-          console.log('Unparseable body: ' + responseBodyAsText);
-          Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
-        }
-      })
-      .then((json) => {
-        postMessage({ wfp: wfp, json: json, counter: counter });
-        RUNNING = 0;
-        if (fs.existsSync(file)) {
-          fs.unlinkSync(file);
-        }
-        if (file in RETRY_MAP) {
-          delete RETRY_MAP[file];
-        }
-        next();
-      }).catch((e) => {
-        RUNNING = 0;
-        if (e.message === 'Timeout') {
-          if (!(file in RETRY_MAP)) {
-            RETRY_MAP[file] = 0;
-          }
-          if (RETRY_MAP[file] <= MAX_RETRIES) {
-            RETRY_MAP[file]++;
-            next();
-          } else {           
-            setTimeout(() => {
-              throw e;
-            });
-          }
+        if (RETRY_MAP[file] <= MAX_RETRIES) {
+          RETRY_MAP[file]++;
+          next();
         } else {
           setTimeout(() => {
             throw e;
           });
         }
-        
-      });
-  
+      } else {
+        setTimeout(() => {
+          throw e;
+        });
+      }
+    });
 }

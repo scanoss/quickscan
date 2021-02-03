@@ -24,7 +24,7 @@ const { request } = require('http');
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
-var CHUNK_SIZE = 40;
+var CHUNK_SIZE = 100;
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
 
 var ctx = {};
@@ -38,8 +38,35 @@ function render_callback(ctx) {
   postMessage(ctx);
 }
 
-function scan_wfp_worker(counter, wfp) {
-  request_worker.postMessage({ wfp: wfp, chunk: CHUNK_SIZE, counter: counter });
+/**
+ * This function stores a scan wfp and metadata in a file in the queue folder
+ * @param {*} wfp
+ * @param {*} counter
+ */
+function queue_scan(wfp, counter) {
+  if (!fs.existsSync(QUEUE_DIR)) {
+    fs.mkdirSync(QUEUE_DIR);
+  }
+  let filename = `${QUEUE_DIR}/${new Date().getTime()}.json`;
+
+  fs.writeFileSync(filename, JSON.stringify({ wfp: wfp, counter: counter }));
+}
+
+/**
+ * This function sends a message to the worker requesting to scan a WFP file
+ */
+function scan_wfp_worker() {
+  const files = fs.readdirSync(QUEUE_DIR);
+  if (files.length > 0) {
+    let file = files.sort()[0];
+    var filepath = path.join(QUEUE_DIR, file);
+    let context = ctx.max_component ? ctx.max_component.name : '';
+    request_worker.postMessage({
+      file: filepath,
+      chunk: CHUNK_SIZE,
+      context: context,
+    });
+  }
 }
 
 request_worker.onmessage = (e) => {
@@ -48,6 +75,7 @@ request_worker.onmessage = (e) => {
   ctx.scanned += counter;
   let done = ctx.scanned >= ctx.total;
   ctx.wfp = e.data.wfp;
+  update_components(ctx, json);
   update_licenses(ctx, json);
   update_vulns(ctx, json);
   append_to_results(ctx, json, done);
@@ -57,6 +85,8 @@ request_worker.onmessage = (e) => {
   }
   json = '';
   postMessage(ctx);
+  // Scan next batch
+  scan_wfp_worker();
 };
 
 request_worker.onerror = (e) => {
@@ -120,18 +150,18 @@ async function recursive_scan(dir) {
     );
 
     if (counter % CHUNK_SIZE === 0) {
-      scan_wfp_worker(counter, wfp);
+      queue_scan(wfp, counter);
       wfp = '';
       counter = 0;
     }
   }
   if (dir === ctx.sourceDir && wfp !== '') {
-    scan_wfp_worker(counter, wfp);
+    queue_scan(wfp, counter);
   }
   return counter;
 }
 
-function scanFolder(initctx, callback) {
+async function scanFolder(initctx, callback) {
   fs.rmdirSync(QUEUE_DIR, { recursive: true });
   // Initialise directories
   if (!fs.existsSync(SCANOSS_DIR)) {
@@ -163,8 +193,9 @@ function scanFolder(initctx, callback) {
 
   // Process directory in chunks
   console.log('Starting Walk ');
-  recursive_scan(ctx.sourceDir);
+  await recursive_scan(ctx.sourceDir);
   console.log('Walk completed');
+  scan_wfp_worker();
 }
 
 function append_to_results(ctx, json, done) {
@@ -203,6 +234,10 @@ function append_to_results(ctx, json, done) {
 }
 
 function update_components(ctx, json) {
+  // max_component is the component with more hits.
+  if (!ctx.max_component) {
+    ctx.max_component = { name: '', hits: 0 };
+  }
   if (ctx.components === undefined) {
     ctx.components = {};
   }
@@ -216,6 +251,10 @@ function update_components(ctx, json) {
           ctx.components[comp_id] = 1;
         } else {
           ctx.components[comp_id]++;
+        }
+        if (ctx.max_component.hits < ctx.components[comp_id]) {
+          ctx.max_component.name = val.component;
+          ctx.max_component.hits = ctx.components[comp_id];
         }
       }
     }
@@ -272,15 +311,15 @@ function update_vulns(ctx, json) {
           }
           if (!(comp_id in ctx.vulns[severity].components)) {
             ctx.vulns[severity].counter++;
-            cves = new Set()
-            cves.add(vuln.CVE)
+            cves = new Set();
+            cves.add(vuln.CVE);
             ctx.vulns[severity].components[comp_id] = {
               versions: versions,
-              cves: cves
-            }
+              cves: cves,
+            };
           } else {
             ctx.vulns[severity].components[comp_id].cves.add(vuln.CVE);
-          } 
+          }
         });
       }
     });

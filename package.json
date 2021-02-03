@@ -1,6 +1,6 @@
 {
   "name": "scanoss-quickscan",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
@@ -15,15 +15,15 @@
   "author": "SCANOSS <info@scanoss.com>",
   "license": "GPL-2.0+",
   "devDependencies": {
-    "electron": "^11.0.1",
+    "electron": "^11.2.2",
     "electron-builder": "^22.9.1",
     "electron-notarize": "^1.0.0"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.1",
-    "bootstrap": "^4.5.3",
+    "@fortawesome/fontawesome-free": "^5.15.2",
+    "bootstrap": "^4.6.0",
     "chart.js": "^2.9.4",
-    "easytimer.js": "^4.3.0",
+    "easytimer.js": "^4.3.1",
     "electron-about-window": "^1.13.4",
     "jquery": "^3.5.1",
     "popper.js": "^1.16.1"
