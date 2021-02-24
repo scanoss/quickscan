@@ -28,28 +28,33 @@ const os = require('os');
 const path = require('path');
 
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
-const TIMEOUT = 30000;
+const TIMEOUT = 60000;
 const MAX_RETRIES = 3;
 const RETRY_MAP = {};
 
 var RUNNING = 0;
-var CHUNK_SIZE = 10;
+var CHUNK_SIZE = 50;
 
 onmessage = (e) => {
   CHUNK_SIZE = e.data.chunk;
-  run_scan(e.data.file, e.data.context);
+  next();
 };
 
-function run_scan(filepath, context) {
+function next() {
   if (RUNNING) {
     return;
   }
-
-  let json = JSON.parse(fs.readFileSync(filepath));
-  scan_wfp(json.wfp, json.counter, filepath, context);
+  const files = fs.readdirSync(QUEUE_DIR);
+  if (files.length > 0) {
+    let file = files.sort()[0];
+    var filepath = path.join(QUEUE_DIR, file);
+    let json = JSON.parse(fs.readFileSync(filepath));
+    scan_wfp(json.wfp, json.counter, filepath);
+  }
 }
 
-function scan_wfp(wfp, counter, file, context) {
+function scan_wfp (wfp, counter, file, context) {
+  console.log("Scan_wfp")
   RUNNING = 1;
   const data = new FormData();
   data.append('filename', new Blob([wfp]), 'data.wfp');
@@ -66,6 +71,7 @@ function scan_wfp(wfp, counter, file, context) {
     ),
   ])
     .then((response) => {
+      console.log("Received response")
       if (response.ok) {
         return response.text();
       } else {
@@ -90,6 +96,7 @@ function scan_wfp(wfp, counter, file, context) {
       if (file in RETRY_MAP) {
         delete RETRY_MAP[file];
       }
+      next();
     })
     .catch((e) => {
       RUNNING = 0;

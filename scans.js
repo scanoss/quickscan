@@ -8,8 +8,65 @@ const {
   createCharts,
   updateCharts,
   destroyCharts,
-  assignCtx
+  assignCtx,
+  save_ctx
 } = require('./renderer');
+const scan_worker = new Worker('./scanner.js');
+var Timer = require('easytimer.js').Timer;
+
+const timerInstance = new Timer();
+
+scan_worker.onmessage = (e) => {
+  scan_callback(e.data);
+};
+
+scan_worker.onerror = (e) => {
+  console.log('Error received in renderer: ' + e.message);
+  $('.loading').hide();
+  $('.alert').show();
+  $('#new-sbom').removeClass('disabled');
+  $('#new-sbom').on('click', scanDirectory);
+  $('.reports-btn').removeClass('disabled');
+  timerInstance.stop();
+};
+
+function resumeScan (scandir) {
+  $('#report-head').show();
+  timerInstance.start();
+  timerInstance.addEventListener('secondsUpdated', function (e) {
+    $('#elapsed').html(timerInstance.getTimeValues().toString());
+  });
+  scan_worker.postMessage( 
+  {
+    scanossdir: SCANOSS_DIR,
+    resume: scandir
+  });
+}
+
+function scan_callback(ctx) {
+  console.log('Calling scan_callback');
+
+  let percent_completed = Math.round((100 * ctx.scanned) / ctx.total);
+  let percent_matches = Math.round((100 * ctx.osscount) / ctx.total);
+  $('.progress-bar').css('width', `${percent_completed}%`);
+  $('.progress-bar').text(`${percent_completed}%`);
+  $('.progress-bar').attr('aria-valuenow', percent_completed);
+  $('.matches').text(`${ctx.osscount}/${ctx.total} (${percent_matches}%)`);
+
+  updateCharts(ctx);
+
+  $('.scanned-files').text(`${ctx.scanned}`);
+  if (ctx.status === 'DONE') {
+    // SCAN DONE
+    timerInstance.stop(); 
+    $('.reports-btn').removeClass('disabled');
+    $('.refresh button').show();
+    $('#report-scan').hide();
+    $('#goto-scans').show();
+
+    save_ctx(ctx);
+  }
+}
 
 
 function saveScanFile(ev, scanfile) {
@@ -39,6 +96,28 @@ function opencharts (ev) {
   createCharts()
   updateCharts(ctx)
   $('.charts').show()
+  if (fs.existsSync(`${scandir}/FAILED`)) {
+    $('#goto-scans').hide();
+    $('#resume-scan').show();
+    $('#resume-scan').on('click', (ev) => {
+      $(this).addClass('disabled');
+      ev.preventDefault();
+      resumeScan(scandir);
+      
+
+    })
+  }
+}
+
+function getScanStatus (scandir) {
+  let status = 'Completed';
+  if (fs.existsSync(`${scandir}/FAILED`)) {
+    let ctxString = fs.readFileSync(`${scandir}/ctx.json`);
+    let ctx = JSON.parse(ctxString);
+    let percent_completed = Math.round((100 * ctx.scanned) / ctx.total);
+    status = `Failed (${percent_completed}%)`;
+  }
+  return status;
 }
 
 function listScans () {
@@ -55,6 +134,7 @@ function listScans () {
     if (hasCtx) {
       ctx = JSON.parse(fs.readFileSync(`${scandir}/ctx.json`));
     }
+    
     const csv = files.includes('sbom.csv')
       ? `<a href="${scandir}/sbom.csv" id="${scan}-csv" class="csv" data-scan="${scan}">Download</a>`
       : 'Not Available';
@@ -67,8 +147,10 @@ function listScans () {
     let chartsColumn = hasCtx
       ? `<td><a href="#" class="opencharts" data-scan="${scan}" data-toggle="tooltip" title="Scan charts"><i class="fas fa-chart-bar"></i></a></td>`
       : '<td></td>';
+    let status = getScanStatus(scandir);
+    
     $(tbody).append(
-      `<tr><td>${scan}</td><td>${ctx.date}</td>${chartsColumn}<td>${wfp}</td><td>${json}</td><td>${csv}</td><td><a href="#" class="delete" data-scan="${scan}"><i class="fas fa-trash"></i></a></td></tr>`
+      `<tr><td>${scan}</td><td>${ctx.date}</td><td>${status}</td><td>${ctx.total}</td>${chartsColumn}<td>${wfp}</td><td>${json}</td><td>${csv}</td><td><a href="#" class="delete" data-scan="${scan}"><i class="fas fa-trash"></i></a></td></tr>`
     );
     
   });
@@ -108,5 +190,7 @@ function listScans () {
 }
 
 $(function () {
+  $('#resume-scan').hide();
+  $('#report-head').hide();
   listScans();
 });

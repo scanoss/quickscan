@@ -40,6 +40,7 @@ module.exports = {
   ossChart,
   vulnChart,
   assignCtx,
+  save_ctx,
 };
 const scan_worker = new Worker('./scanner.js');
 const timerInstance = new Timer();
@@ -89,8 +90,27 @@ scan_worker.onerror = (e) => {
   $('#new-sbom').removeClass('disabled');
   $('#new-sbom').on('click', scanDirectory);
   $('.reports-btn').removeClass('disabled');
-  timerInstance.stop();
+  $('#resume-scan a').removeClass('disabled');
+  timerInstance.pause();
+  $('#resume-scan').show();
+  $('#resume-scan').on('click', (ev) => {
+    disableButtons();
+    ev.preventDefault();
+    resumeScan(globctx.scandir);
+  });
 };
+
+function resumeScan(scandir) {
+  $('#report-head').show();
+  timerInstance.start();
+  timerInstance.addEventListener('secondsUpdated', function (e) {
+    $('#elapsed').html(timerInstance.getTimeValues().toString());
+  });
+  scan_worker.postMessage({
+    scanossdir: SCANOSS_DIR,
+    resume: scandir,
+  });
+}
 
 function update_table(components) {
   let tbody = '.table tbody';
@@ -115,9 +135,11 @@ function update_vuln_table(components) {
   for (const [key, value] of Object.entries(components)) {
     index++;
     let parts = key.split(':');
-    let cves = value.cves === undefined ? []:[...value.cves]
+    let cves = value.cves === undefined ? [] : [...value.cves];
     $(tbody).append(
-      `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${value.versions}</td><td>${cves.join(',')}</td></tr>`
+      `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${
+        value.versions
+      }</td><td>${cves.join(',')}</td></tr>`
     );
     if (index === 10) {
       return;
@@ -152,15 +174,14 @@ function updateVulnChart(ctx) {
   }
 }
 
-function save_ctx(ctx) {
-  let persistedCtx = {
-    vulns: ctx.vulns,
-    licenses: ctx.licenses,
-    total: ctx.total,
-    osscount: ctx.osscount,
-    date: ctx.date,
-  };
-  fs.writeFileSync(`${ctx.scandir}/ctx.json`, JSON.stringify(persistedCtx));
+function save_ctx (ctx) {
+  // Convert CVEs from Set to arrays.
+  ctx.vulns.forEach((vuln) => {
+    vulns.components.forEach((component) => {
+      component.cves = Array.from(component.cves);
+    })
+  })
+  fs.writeFileSync(`${ctx.scandir}/ctx.json`, JSON.stringify(ctx));
 }
 
 function updateCharts(ctx) {
@@ -180,6 +201,7 @@ function updateCharts(ctx) {
 }
 
 function scan_callback(ctx) {
+  console.log('Calling scan_callback');
   globctx = ctx;
   if ($('.report').is(':hidden')) {
     $('.loading').hide();
@@ -199,13 +221,13 @@ function scan_callback(ctx) {
   if (ctx.status !== 'DONE') {
   } else {
     // SCAN DONE
-    timerInstance.stop();
+    timerInstance.pause();
     $('#new-sbom').removeClass('disabled');
     $('#new-sbom').on('click', scanDirectory);
 
     $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
-
+    $('#resume-scan').hide();
     save_ctx(ctx);
   }
 }
@@ -362,6 +384,7 @@ function formatDate(date) {
 }
 
 function scanDirectory(ev) {
+  $('#resume-scan').hide();
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
     $('#elapsed').html(timerInstance.getTimeValues().toString());
@@ -402,6 +425,12 @@ function scanDirectory(ev) {
   });
 
   // disable buttons
+  disableButtons();
+}
+
+function disableButtons() {
+  $('#resume-scan a').addClass('disabled');
+  $('#resume-scan a').off('click');
   $('.reports-btn').off('click');
   $('.reports-btn').addClass('disabled');
   $('#new-sbom').addClass('disabled');
@@ -412,5 +441,6 @@ $(function () {
   $('.alert').hide();
   $('.report').hide();
   $('.loading').hide();
+  $('#resume-scan').hide();
   $('#new-sbom').on('click', scanDirectory);
 });

@@ -19,7 +19,10 @@
 
     <a class="navbar-brand" href="#"><img src="quickscan.png" width="150"></a>
     <ul class="nav navbar-nav ml-auto mr-1">
-      <li>
+      <li id='resume-scan'>
+        <a href="#" class="btn btn-outline-light my-2 my-sm-0">RESUME</a>
+      </li>
+      <li id="goto-scans">
         <a href="index.html" class="btn btn-outline-light my-2 my-sm-0">SCAN</a>
       </li>
       <li>
@@ -41,6 +44,8 @@
               <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">Files</th>
                 <th scope="col">Charts</th>
                 <th scope="col">WFP File</th>
                 <th scope="col">Raw Results</th>
@@ -55,6 +60,28 @@
           </table>
         </div>
 
+      </div>
+    </div>
+
+    <div class="alert">
+      <div class="alert alert-danger" role="alert">
+        There was an issue scanning this folder. Probably due to network connectivity. The partial report of this scan is
+        available in the reports page. You can help us improve this tool by reporting this issue at <a
+          href="mailto:support@scanoss.com">support@scanoss.com</a>
+      </div>
+    </div>
+
+    <div class="row" id="report-head">
+      <div class="progress">
+        <div class="progress-bar progress-bar-custom" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+          aria-valuemax="100">
+        </div>
+      </div>
+      <div class="progress-legend w-100">
+        <div class="scanfolder"></div>
+        <div id="report-status" class="float-right"><span id="elapsed">00:00:00</span> elapsed (<span
+            class="scanned-files"></span> files
+          scanned)</div>
       </div>
     </div>
 

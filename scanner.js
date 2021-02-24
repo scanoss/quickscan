@@ -31,12 +31,12 @@ var ctx = {};
 
 onmessage = (e) => {
   SCANOSS_DIR = e.data.scanossdir;
-  scanFolder(e.data.ctx, render_callback);
+  if (e.data.resume) {
+    resumeScan(e.data.resume);
+  } else {
+    scanFolder(e.data.ctx);
+  }
 };
-
-function render_callback(ctx) {
-  postMessage(ctx);
-}
 
 /**
  * This function stores a scan wfp and metadata in a file in the queue folder
@@ -44,12 +44,14 @@ function render_callback(ctx) {
  * @param {*} counter
  */
 function queue_scan(wfp, counter) {
+  console.log('queue_scan, counter: ' + counter);
   if (!fs.existsSync(QUEUE_DIR)) {
     fs.mkdirSync(QUEUE_DIR);
   }
   let filename = `${QUEUE_DIR}/${new Date().getTime()}.json`;
 
   fs.writeFileSync(filename, JSON.stringify({ wfp: wfp, counter: counter }));
+  scan_wfp_worker();
 }
 
 /**
@@ -90,8 +92,48 @@ request_worker.onmessage = (e) => {
 };
 
 request_worker.onerror = (e) => {
+  console.log('Received error while scanning. Preparing for recovery');
+  let pending_dir = `${ctx.scandir}/pending`;
+  fs.mkdirSync(pending_dir);
+  const files = fs.readdirSync(QUEUE_DIR);
+  files.forEach((file) => {
+    var filepath = path.join(QUEUE_DIR, file);
+    const stats = fs.lstatSync(filepath);
+    if (stats.isFile()) {
+      fs.copyFileSync(filepath, `${pending_dir}/${file}`);
+    }
+  });
+  // Convert CVEs from Set to arrays.
+  ctx.vulns.forEach((vuln) => {
+    vulns.components.forEach((component) => {
+      component.cves = Array.from(component.cves);
+    });
+  });
+  fs.writeFileSync(`${ctx.scandir}/ctx.json`, JSON.stringify(ctx));
+  fs.writeFileSync(`${ctx.scandir}/FAILED`, '');
   throw e;
 };
+
+function resumeScan(scandir) {
+  console.log(`Resuming scan ${scandir}`);
+  let pending_dir = `${scandir}/pending`;
+  const files = fs.readdirSync(pending_dir);
+  files.forEach((file) => {
+    var filepath = path.join(pending_dir, file);
+    const stats = fs.lstatSync(filepath);
+    if (stats.isFile()) {
+      fs.copyFileSync(filepath, `${QUEUE_DIR}/${file}`);
+    }
+  });
+  let ctxString = fs.readFileSync(`${scandir}/ctx.json`);
+  ctx = JSON.parse(ctxString);
+  scan_wfp_worker();
+  try {
+    fs.unlinkSync(`${scandir}/FAILED`);
+  } catch (error) {
+    console.log('Error unlinking FAILED file: ', error);
+  }
+}
 
 function get_scan_dir(path) {
   return path.match(/[^\\\/]+$/);
@@ -161,7 +203,7 @@ async function recursive_scan(dir) {
   return counter;
 }
 
-async function scanFolder(initctx, callback) {
+async function scanFolder(initctx) {
   fs.rmdirSync(QUEUE_DIR, { recursive: true });
   // Initialise directories
   if (!fs.existsSync(SCANOSS_DIR)) {
@@ -195,7 +237,6 @@ async function scanFolder(initctx, callback) {
   console.log('Starting Walk ');
   await recursive_scan(ctx.sourceDir);
   console.log('Walk completed');
-  scan_wfp_worker();
 }
 
 function append_to_results(ctx, json, done) {
@@ -318,7 +359,25 @@ function update_vulns(ctx, json) {
               cves: cves,
             };
           } else {
-            ctx.vulns[severity].components[comp_id].cves.add(vuln.CVE);
+            if (!ctx.vulns[severity].components[comp_id].cves) {
+              ctx.vulns[severity].components[comp_id].cves = new Set();
+            } else if (
+              Array.isArray(ctx.vulns[severity].components[comp_id].cves)
+            ) {
+              ctx.vulns[severity].components[comp_id].cves = new Set(
+                ctx.vulns[severity].components[comp_id].cves
+              );
+            }
+            try {
+              ctx.vulns[severity].components[comp_id].cves.add(vuln.CVE);
+            } catch (error) {
+              console.log(
+                `ctx.vulns[severity].components[comp_id]: ${JSON.stringify(
+                  ctx.vulns[severity].components[comp_id]
+                )}, `,
+                error
+              );
+            }
           }
         });
       }

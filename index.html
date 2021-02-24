@@ -19,7 +19,10 @@
 
     <a class="navbar-brand" href="#"><img src="quickscan.png" width="150"></a>
     <ul class="nav navbar-nav ml-auto mr-1">
-      <li>
+      <li id='resume-scan'>
+        <a href="#" class="btn btn-outline-light my-2 my-sm-0 mr-2">RESUME</a>
+      </li>
+      <li id="scan-folder">
         <a href="#" class="btn btn-outline-light my-2 my-sm-0" id="new-sbom">SCAN FOLDER</a>
       </li>
       <li>
@@ -101,7 +104,7 @@
     <div class="container-fluid">
       <div class="alert">
         <div class="alert alert-danger" role="alert">
-          There was an issue scanning this folder. Probably due to network connectivity. The partial report of this scan is
+          There was an issue scanning this folder. Probably due to network connectivity. You can resume the scan by clicking on the Resume button. The partial report of this scan is
           available in the reports page. You can help us improve this tool by reporting this issue at <a
             href="mailto:support@scanoss.com">support@scanoss.com</a>
         </div>
