@@ -100,7 +100,8 @@ scan_worker.onerror = (e) => {
   });
 };
 
-function resumeScan(scandir) {
+function resumeScan (scandir) {
+  $('.alert').hide();
   $('#report-head').show();
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
@@ -176,11 +177,11 @@ function updateVulnChart(ctx) {
 
 function save_ctx (ctx) {
   // Convert CVEs from Set to arrays.
-  ctx.vulns.forEach((vuln) => {
-    vulns.components.forEach((component) => {
+  Object.values(ctx.vulns).forEach((vuln) => {
+    Object.values(vuln.components).forEach((component) => {
       component.cves = Array.from(component.cves);
-    })
-  })
+    });
+  });
   fs.writeFileSync(`${ctx.scandir}/ctx.json`, JSON.stringify(ctx));
 }
 
@@ -316,7 +317,7 @@ function createCharts() {
       },
       title: {
         display: true,
-        text: 'Vulnerabilities Found',
+        text: 'Components with Vulnerabilities',
       },
       legend: {
         display: false,

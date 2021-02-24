@@ -104,8 +104,8 @@ request_worker.onerror = (e) => {
     }
   });
   // Convert CVEs from Set to arrays.
-  ctx.vulns.forEach((vuln) => {
-    vulns.components.forEach((component) => {
+  Object.values(ctx.vulns).forEach((vuln) => {
+    Object.values(vuln.components).forEach((component) => {
       component.cves = Array.from(component.cves);
     });
   });
