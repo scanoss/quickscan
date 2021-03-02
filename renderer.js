@@ -95,12 +95,14 @@ scan_worker.onerror = (e) => {
   $('#resume-scan').show();
   $('#resume-scan').on('click', (ev) => {
     disableButtons();
+    $('.alert').hide();
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
 };
 
 function resumeScan (scandir) {
+  console.log('Resume scan for dir: ', scandir)
   $('.alert').hide();
   $('#report-head').show();
   timerInstance.start();

@@ -54,7 +54,6 @@ function next() {
 }
 
 function scan_wfp (wfp, counter, file, context) {
-  console.log("Scan_wfp")
   RUNNING = 1;
   const data = new FormData();
   data.append('filename', new Blob([wfp]), 'data.wfp');
@@ -71,7 +70,6 @@ function scan_wfp (wfp, counter, file, context) {
     ),
   ])
     .then((response) => {
-      console.log("Received response")
       if (response.ok) {
         return response.text();
       } else {

@@ -20,7 +20,12 @@ const sqlite3 = require('sqlite3').verbose()
 const CREATE_TABLE_STATUS = "create table if not exists status (status text, message text, created timestamp, total integer default 0, scanned integer default 0);"
 const CREATE_TABLE_FILES = "create table if not exists files (id integer primary key asc, path text, scanned integer default 0);"
 const CREATE_TABLE_RESULTS =
-  'create table if not exists results (id integer primary key asc, path text, vendor text, component text, version text, latest_version text, license text, url text, lines text, oss_lines text, matched text, filename text, size text, idtype text, md5_file text, md5_comp text);';
+  'create table if not exists results (id integer primary key asc, source text, vendor text, component text, version text, latest text, url text, lines text, oss_lines text, matched text, file text, idtype text, file_id text, component_id text, elapsed text);';
+const CREATE_TABLE_RESULT_VULNS = 'create table if not exists result_vulns (id integer primary key asc, resultid integer not null, vuln_id text, cve text, severity text, reported text, introduced text, patched text, summary text, source text);'
+const CREATE_TABLE_RESULT_LICS = 'create table if not exists result_lics (id integer primary key asc, resultid integer not null, name text, source text);'
+const CREATE_TABLE_RESULT_COPYS =
+  'create table if not exists result_copys (id integer primary key asc, resultid integer not null, name text, source text);';
+
 
 class ScanDB {
 
@@ -32,6 +37,10 @@ class ScanDB {
   create () {
     this.db.exec(CREATE_TABLE_FILES);
     this.db.exec(CREATE_TABLE_RESULTS);
+    this.db.exec(CREATE_TABLE_RESULT_COPYS);
+    this.db.exec(CREATE_TABLE_RESULT_VULNS);
+    this.db.exec(CREATE_TABLE_RESULT_LICS);
+    this.db.exec(CREATE_TABLE_STATUS);
   }
 
   close () {

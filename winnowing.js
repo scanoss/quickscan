@@ -180,8 +180,14 @@ function is_filtered_dir(dir, sep = pathSeparator) {
  * Returns the WFP for a file by executing the winnowing algorithm over its contents.
  * @param {string} file The name of the file
  */
-function wfp_for_file(file, filename) {
-  let contents = fs.readFileSync(file);
+function wfp_for_file (file, filename) {
+  let contents = ''
+  try {
+    contents = fs.readFileSync(file);
+  } catch (error) {
+    console.log("Error reading file: ", filename)
+    return "";
+  }
 
   let file_md5 = crypto.createHash('md5').update(contents).digest('hex');
   let wfp = `file=${file_md5},${contents.length},${filename}\n`;

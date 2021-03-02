@@ -1,0 +1,50 @@
+{
+  "unoconv.sh": [
+    {
+      "id": "snippet",
+      "lines": "4-10",
+      "oss_lines": "137-143",
+      "matched": "60%",
+      "vendor": "unoconv",
+      "component": "unoconv",
+      "version": "0.8.2",
+      "latest": "0.8.2",
+      "url": "https://github.com/unoconv/unoconv/archive/0.8.2.tar.gz",
+      "file": "unoconv-0.8.2/unoconv",
+      "component_id": "b53576ddfc63b441ef55998f2f97db8e",
+      "file_id": "0f55e083dcc72a11334eb1a77137e2c4",
+      "dependencies": [],
+      "licenses": [
+        {
+          "name": "GPL-2.0-only",
+          "source": "component_declared"
+        }
+      ],
+      "copyrights": [
+        {
+          "name": "Copyright 2007-2010 Dag Wieers <dag@wieers.com>",
+          "source": "file_header"
+        }
+      ],
+      "vulnerabilities": [
+        {
+          "ID": "GHSA-27p5-7cw6-m45h",
+          "CVE": "CVE-2019-17400",
+          "severity": "MODERATE",
+          "reported": "2019-11-01T17:03:50Z",
+          "introduced": "",
+          "patched": "<0.9.0",
+          "summary": "Mishandled untrusted pathnames could lead to SSRF and local file inclusion",
+          "source": "github_advisories"
+        }
+      ],
+      "quality": [
+        {
+          "score": "2/5",
+          "source": "best_practices"
+        }
+      ],
+      "elapsed": "0.003973s"
+    }
+  ]
+}

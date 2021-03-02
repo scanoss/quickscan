@@ -239,7 +239,10 @@ async function scanFolder(initctx) {
   console.log('Walk completed');
 }
 
-function append_to_results(ctx, json, done) {
+function append_to_results (ctx, json, done) {
+  if (!json) {
+    return;
+  }
   let count = Object.keys(json).length;
   let index = 0;
   for (let key in json) {
@@ -274,7 +277,10 @@ function append_to_results(ctx, json, done) {
   }
 }
 
-function update_components(ctx, json) {
+function update_components (ctx, json) {
+  if (!json) {
+    return;
+  }
   // max_component is the component with more hits.
   if (!ctx.max_component) {
     ctx.max_component = { name: '', hits: 0 };
@@ -302,7 +308,10 @@ function update_components(ctx, json) {
   }
 }
 
-function update_licenses(ctx, json) {
+function update_licenses (ctx, json) {
+  if (!json) {
+    return;
+  }
   if (ctx.licenses === undefined) {
     ctx.licenses = {};
   }
@@ -332,7 +341,10 @@ function update_licenses(ctx, json) {
   }
 }
 
-function update_vulns(ctx, json) {
+function update_vulns (ctx, json) {
+  if (!json) {
+    return;
+  }
   if (!ctx.vulns) {
     ctx.vulns = {};
   }
