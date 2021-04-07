@@ -1,7 +1,7 @@
  
-<img alt="SCANOSS Quickscan Logo" width=250 src="./logo.png"/>
+<img alt="SCANOSS Quickscan Lite Logo" width=250 src="./QS_lite_logo_colour.png"/>
 
-## What is SCANOSS Quickscan?
+## What is SCANOSS Quickscan Lite?
 It is a tool that demonstrates scanning source code against <a href="https://osskb.org">osskb.org</a>.
 SCANOSS Quickscan scans source code against a knowledge base representing the entire OSS community. The results of the scan contain OSS matches
 (full file or snippet) of the scanned code against OSS components.
