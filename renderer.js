@@ -99,6 +99,7 @@ scan_worker.onerror = (e) => {
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
+  alert(`Ups, something went wrong parsing a JSON object \n ${e.message}`);
 };
 
 function resumeScan (scandir) {

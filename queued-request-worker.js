@@ -82,7 +82,11 @@ function scan_wfp (wfp, counter, file, context) {
         return bodyAsJson;
       } catch (e) {
         console.log('Unparseable body: ' + responseBodyAsText);
-        Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
+        //Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
+        
+        //Throw an error if the JSON is not parseable.
+        //It is catched on the promises chain and then scan_worker.onerror is called.
+        throw e;
       }
     })
     .then((json) => {
