@@ -78,6 +78,7 @@ function scan_wfp (wfp, counter, file, context) {
     })
     .then((responseBodyAsText) => {
       try {
+
         const bodyAsJson = JSON.parse(responseBodyAsText);
         return bodyAsJson;
       } catch (e) {
