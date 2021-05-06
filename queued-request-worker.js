@@ -78,6 +78,10 @@ function scan_wfp (wfp, counter, file, context) {
     })
     .then((responseBodyAsText) => {
       try {
+        
+        // remove all trailing commas
+        let regex = /\,(?!\s*?[\{\[\"\'\w])/g;
+        responseBodyAsText = responseBodyAsText.replace(regex, ''); 
 
         const bodyAsJson = JSON.parse(responseBodyAsText);
         return bodyAsJson;
