@@ -25,6 +25,7 @@ const { remote } = require('electron'),
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
 
+
 window.$ = window.jQuery = require('jquery');
 window.Bootstrap = require('bootstrap');
 const SCANOSS_DIR = `${app.getPath('appData')}/scanoss`;
@@ -43,6 +44,7 @@ module.exports = {
   save_ctx,
 };
 const scan_worker = new Worker('./scanner.js');
+const obligation_worker = new Worker('./obligations.js')
 const timerInstance = new Timer();
 var timerFunction;
 
@@ -99,7 +101,20 @@ scan_worker.onerror = (e) => {
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
+  alert(`Ups, something went wrong parsing a JSON object \n ${e.message}`);
 };
+
+obligation_worker.onerror = (e) => {
+  alert(`Error showing licenses obligations ${e.message}`);
+}
+
+obligation_worker.onmessage = (e)=> {
+  //This function will append all the obligantions objects to the otable
+  create_rows_from_obligations_array(e.data,$('.otable tbody'));
+  $('.otable').show();
+};
+
+
 
 function resumeScan (scandir) {
   console.log('Resume scan for dir: ', scandir)
@@ -116,7 +131,7 @@ function resumeScan (scandir) {
 }
 
 function update_table(components) {
-  let tbody = '.table tbody';
+  let tbody = '.upgradeable tbody';
   $(tbody).html('');
   let index = 0;
   for (const [key, value] of Object.entries(components)) {
@@ -132,7 +147,7 @@ function update_table(components) {
 }
 
 function update_vuln_table(components) {
-  let tbody = '.table tbody';
+  let tbody = '.upgradeable tbody';
   $(tbody).html('');
   let index = 0;
   for (const [key, value] of Object.entries(components)) {
@@ -191,7 +206,7 @@ function updateCharts(ctx) {
   const sortedLics = Object.entries(ctx.licenses)
     .sort(([, a], [, b]) => b.counter - a.counter)
     .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
-
+  
   licenseChart.data.labels = Object.keys(sortedLics).slice(0, 8);
   licenseChart.data.datasets[0].data = Object.values(sortedLics).slice(0, 8);
   licenseChart.update();
@@ -219,6 +234,7 @@ function scan_callback(ctx) {
   $('.matches').text(`${ctx.osscount}/${ctx.total} (${percent_matches}%)`);
 
   updateCharts(ctx);
+  
 
   $('.scanned-files').text(`${ctx.scanned}`);
   if (ctx.status !== 'DONE') {
@@ -231,7 +247,21 @@ function scan_callback(ctx) {
     $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
     $('#resume-scan').hide();
+    
     save_ctx(ctx);
+    /* license obligations */
+
+    const sortedLics = Object.entries(ctx.licenses)
+    .sort(([, a], [, b]) => b.counter - a.counter)
+    .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
+
+    let licenses = Object.keys(sortedLics);
+    console.log(licenses);
+
+    //Send an array with license name strings in order to get the licenses obligations
+    obligation_worker.postMessage(licenses);
+    /* license obligations */
+
   }
 }
 
@@ -347,6 +377,75 @@ function createCharts() {
   });
 }
 
+function create_rows_from_obligations_array(obligations, body_table){
+  
+  let incompatible_licenses = new Set();
+  let incompatible_licenses_count = 0;
+  
+  $(body_table).html('');  	// Clean the previous data
+  $(body_table).next("tfoot").remove();	//Delete the previous footer
+  
+  //On each iteration one obligation is analized and is created one row.
+  //Also incompatible licenses are added to a set to compare them later
+  obligations.forEach(obligation => {
+     
+    //Create row
+    let row = $("<tr></tr>"); 
+    let license_name = Object.keys(obligation)[0]; 
+    let data = obligation[license_name][0];
+
+    //Add license name cell 
+    row.append($(`<td> ${license_name} </td>`));
+
+    let parameters = ["obligations","copyleft","patent_hints","incompatible_with"];
+    for(let index=0;index<parameters.length;index++){
+   
+      if (data.hasOwnProperty(parameters[index]))
+        row.append($(`<td>${data[parameters[index]]}</td>`));
+      else
+        row.append($(`<td>--</td>`));
+
+        //Incompatible license are added to the set.
+      if(parameters[index]=="incompatible_with" && data.hasOwnProperty("incompatible_with")){ 
+        let incompatible_license_array = data[parameters[index]].split(',');
+        incompatible_license_array.forEach((item,index,array) =>{
+          array[index]=array[index].trim(); //Remove any whitespace and add it to the set
+          if(!incompatible_licenses.has(array[index]))
+            incompatible_licenses.add(array[index]);
+        });
+      }
+
+    }
+
+    //Here is detected if there are a YES on copyleft field and change the text style to bold and red color
+    let copyleft_element = $(row).children().eq(2);
+    if (copyleft_element.text()==="yes") 
+      copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
+    
+    
+    $(body_table).append(row);
+  });
+
+  //Iterate over all the licenses names rows and check if there are some incompatible licenses.
+    $(body_table).children().each((index,row) =>{
+    let license_element = $(row).children().eq(0);
+    if(incompatible_licenses.has(license_element.text().trim())){
+      license_element.css({'color': 'red', 'font-weight' : 'bold'});
+      incompatible_licenses_count++;
+    }
+  });
+  
+  //Add a foot to the table
+  if(incompatible_licenses_count>0) {
+    let text = "Note: License conflicts have been identified."
+    $(body_table).after(`<tfoot><tr><td colspan="5"><p>${text}</p></td></tr></tfoot>`);
+  }
+}
+
+
+
+
+
 function initReport(ctx) {
   $('.report').show();
   $('.scanfolder').text(ctx.sourceDir);
@@ -388,6 +487,7 @@ function formatDate(date) {
 
 function scanDirectory(ev) {
   $('#resume-scan').hide();
+  $('.otable').hide(); //Hide obligations table
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
     $('#elapsed').html(timerInstance.getTimeValues().toString());
