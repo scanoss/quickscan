@@ -5,6 +5,7 @@ var index = 0;
 
 onmessage = (e) => {
     
+  obligations.length =0 //Clean the array 	
   e.data.forEach(element => {
     licenses_name.push(element);
   });

@@ -382,6 +382,9 @@ function create_rows_from_obligations_array(obligations, body_table){
   let incompatible_licenses = new Set();
   let incompatible_licenses_count = 0;
   
+  $(body_table).html('');  	// Clean the previous data
+  $(body_table).next("tfoot").remove();	//Delete the previous footer
+  
   //On each iteration one obligation is analized and is created one row.
   //Also incompatible licenses are added to a set to compare them later
   obligations.forEach(obligation => {
@@ -426,7 +429,7 @@ function create_rows_from_obligations_array(obligations, body_table){
   //Iterate over all the licenses names rows and check if there are some incompatible licenses.
     $(body_table).children().each((index,row) =>{
     let license_element = $(row).children().eq(0);
-    if(incompatible_licenses.has(license_element.text())){
+    if(incompatible_licenses.has(license_element.text().trim())){
       license_element.css({'color': 'red', 'font-weight' : 'bold'});
       incompatible_licenses_count++;
     }
