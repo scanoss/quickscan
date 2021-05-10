@@ -418,9 +418,9 @@ function create_rows_from_obligations_array(obligations, body_table){
     }
 
     //Here is detected if there are a YES on copyleft field and change the text style to bold and red color
-    let copyleft_element = $(row).children().eq(2);
-    if (copyleft_element.text()==="yes") 
-      copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
+    // let copyleft_element = $(row).children().eq(2);
+    // if (copyleft_element.text()==="yes") 
+    //   copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
     
     
     $(body_table).append(row);
@@ -430,6 +430,7 @@ function create_rows_from_obligations_array(obligations, body_table){
     $(body_table).children().each((index,row) =>{
     let license_element = $(row).children().eq(0);
     if(incompatible_licenses.has(license_element.text().trim())){
+      license_element.prepend('*');
       license_element.css({'color': 'red', 'font-weight' : 'bold'});
       incompatible_licenses_count++;
     }
@@ -437,8 +438,11 @@ function create_rows_from_obligations_array(obligations, body_table){
   
   //Add a foot to the table
   if(incompatible_licenses_count>0) {
-    let text = "Note: License conflicts have been identified."
-    $(body_table).after(`<tfoot><tr><td colspan="5"><p>${text}</p></td></tr></tfoot>`);
+    let text = "*Note: License conflicts have been identified."
+    let tfoot = $(`<tfoot><tr><td colspan="5"><p>${text}</p></td></tr></tfoot>`);
+    tfoot.css({'color': 'red', 'font-weight' : 'bold'});
+    $(body_table).after(tfoot);
+    
   }
 }
 
@@ -547,3 +551,6 @@ $(function () {
   $('#resume-scan').hide();
   $('#new-sbom').on('click', scanDirectory);
 });
+
+
+
