@@ -7,6 +7,7 @@ const {
   DOWNLOADS_DIR,
   createCharts,
   updateCharts,
+  updateObligationTable,
   destroyCharts,
   assignCtx,
   save_ctx
@@ -92,9 +93,10 @@ function opencharts (ev) {
   $('.report-title').text(scan)
   const scandir = `${SCANOSS_DIR}/${scan}`;
   ctx = JSON.parse(fs.readFileSync(`${scandir}/ctx.json`));
-  assignCtx(ctx)
-  createCharts()
-  updateCharts(ctx)
+  assignCtx(ctx);
+  createCharts();
+  updateCharts(ctx);
+  updateObligationTable(ctx);
   $('.charts').show()
   if (fs.existsSync(`${scandir}/FAILED`)) {
     $('#goto-scans').hide();
