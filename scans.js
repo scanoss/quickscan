@@ -10,7 +10,7 @@ const {
   destroyCharts,
   assignCtx,
   save_ctx
-} = require('./renderer');
+} = require('./renderer.js');
 const scan_worker = new Worker('./scanner.js');
 var Timer = require('easytimer.js').Timer;
 
