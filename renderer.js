@@ -552,5 +552,3 @@ $(function () {
   $('#new-sbom').on('click', scanDirectory);
 });
 
-
-

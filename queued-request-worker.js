@@ -35,7 +35,18 @@ const RETRY_MAP = {};
 var RUNNING = 0;
 var CHUNK_SIZE = 50;
 
+let TIMESTAMP = '';
+
 onmessage = (e) => {
+  
+  if(!TIMESTAMP) {
+    const package_json=JSON.parse(fs.readFileSync('./package.json'));
+    TIMESTAMP = `${package_json.name} ${package_json.versiondate} ${package_json.version}`;  
+    console.log(typeof(TIMESTAMP));
+    console.log(TIMESTAMP);
+  }
+
+
   CHUNK_SIZE = e.data.chunk;
   next();
 };
@@ -57,6 +68,7 @@ function scan_wfp (wfp, counter, file, context) {
   RUNNING = 1;
   const data = new FormData();
   data.append('filename', new Blob([wfp]), 'data.wfp');
+  data.append('client',new Blob([TIMESTAMP]));
   if (context) {
     data.append('context', context);
   }
