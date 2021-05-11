@@ -394,10 +394,14 @@ function create_rows_from_obligations_array(obligations, body_table){
     let license_name = Object.keys(obligation)[0]; 
     let data = obligation[license_name][0];
 
-    //Add license name cell 
-    row.append($(`<td> ${license_name} </td>`));
-
-    let parameters = ["obligations","copyleft","patent_hints","incompatible_with"];
+    //Add license name with tooltip  
+    row.append($(`<td> 
+                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip" 
+                  title="OSADL license obligations"> ${license_name} </a> 
+                  </td>`
+                  ));
+  
+    let parameters = ["copyleft","patent_hints","incompatible_with"];
     for(let index=0;index<parameters.length;index++){
    
       if (data.hasOwnProperty(parameters[index]))
