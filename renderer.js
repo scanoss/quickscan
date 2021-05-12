@@ -216,12 +216,6 @@ function updateObligationTable(ctx) {
 
       }
 
-      //Here is detected if there are a YES on copyleft field and change the text style to bold and red color
-      // let copyleft_element = $(row).children().eq(2);
-      // if (copyleft_element.text()==="yes") 
-      //   copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
-
-
       $(body_table).append(row);
     });
 
@@ -331,8 +325,6 @@ function scan_callback(ctx) {
     $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
     $('#resume-scan').hide();
-
-    //save_ctx(ctx);
 
     /* license obligations */
     const sortedLics = Object.entries(ctx.licenses)

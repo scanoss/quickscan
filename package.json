@@ -1,7 +1,7 @@
 {
   "name": "quickscan-lite",
   "version": "1.2.2",
-  "versiondate": "05.12.21",
+  "buildDate": "05.12.21",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "sqlite3": "^5.0.1"
   },
   "build": {
-    "appId": "com.scanoss.quickscan.lite",
+    "appId": "com.scanoss.quickscan",
     "productName": "Quickscan Lite",
     "copyright": "Copyright © 2020,2021 SCANOSS.COM",
     "afterPack": "build/afterpack.js",
@@ -55,7 +55,7 @@
       "vendor": "SCANOSS",
       "icon": "icons/",
       "category": "Utility",
-      "executableName": "scanoss-quickscan-lite",
+      "executableName": "quickscan-lite",
       "executableArgs": [
         "--no-sandbox"
       ],

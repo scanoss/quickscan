@@ -15,19 +15,4 @@ module.exports = async function (context) {
   // eslint-disable-next-line no-console
   console.log('afterPack hook triggered', context);
 
-  // const executableName = context.packager.executableName;
-  // const sourceExecutable = path.join(context.appOutDir, executableName);
-  // const targetExecutable = path.join(
-  //   context.appOutDir,
-  //   `${executableName}-bin`
-  // );
-  // const launcherScript = path.join(
-  //   context.appOutDir,
-  //   'resources',
-  //   'launcher-script.sh'
-  // );
-  // // rename beekeeper-studio to beekeeper-studio-bin
-  // await renameAsync(sourceExecutable, targetExecutable);
-  // // rename launcher script to beekeeper-studio
-  // await renameAsync(launcherScript, sourceExecutable);
 };

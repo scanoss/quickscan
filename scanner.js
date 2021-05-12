@@ -172,7 +172,6 @@ function countFiles(dir) {
 async function* walk(dir) {
   for await (const d of await fs.promises.opendir(dir)) {
     const entry = path.join(dir, d.name);
-    // const stats = fs.lstatSync(entry);
     if (
       d.isDirectory() &&
       !d.isSymbolicLink() &&
@@ -183,7 +182,6 @@ async function* walk(dir) {
       d.isFile() &&
       !d.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(entry)) 
-      //stats.size>winnowing.MIN_FILE_SIZE
     )
       yield entry;
   }
