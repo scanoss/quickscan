@@ -1,7 +1,7 @@
 {
-  "name": "scanoss-quickscan-lite",
-  "version": "1.2.1",
-  "versiondate" : "05.10.21",
+  "name": "quickscan-lite",
+  "version": "1.2.2",
+  "versiondate": "05.12.21",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "chart.js": "^2.9.4",
     "easytimer.js": "^4.3.1",
     "electron-about-window": "^1.13.4",
+    "isbinaryfile": "^4.0.8",
     "jquery": "^3.5.1",
     "popper.js": "^1.16.1",
     "sqlite3": "^5.0.1"

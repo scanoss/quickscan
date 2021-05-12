@@ -27,6 +27,10 @@ var SCANOSS_DIR;
 var CHUNK_SIZE = 100;
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
 
+// Prevent to analize .asar files as directories
+// For references go to: https://www.electronjs.org/docs/api/process  
+process.noAsar = true;
+
 var ctx = {};
 
 onmessage = (e) => {
@@ -155,7 +159,10 @@ function countFiles(dir) {
       stats.isFile() &&
       !stats.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(filepath))
-    ) {
+      //stats.size>winnowing.MIN_FILE_SIZE) 
+      )
+      
+    {
       index++;
     }
   });
@@ -165,7 +172,7 @@ function countFiles(dir) {
 async function* walk(dir) {
   for await (const d of await fs.promises.opendir(dir)) {
     const entry = path.join(dir, d.name);
-    // const stats = fs.lstatSync(filepath);
+    // const stats = fs.lstatSync(entry);
     if (
       d.isDirectory() &&
       !d.isSymbolicLink() &&
@@ -175,7 +182,8 @@ async function* walk(dir) {
     else if (
       d.isFile() &&
       !d.isSymbolicLink() &&
-      !winnowing.FILTERED_EXT.includes(path.extname(entry))
+      !winnowing.FILTERED_EXT.includes(path.extname(entry)) 
+      //stats.size>winnowing.MIN_FILE_SIZE
     )
       yield entry;
   }
@@ -185,17 +193,18 @@ async function recursive_scan(dir) {
   let wfp = '';
   let counter = 0;
   for await (const filepath of walk(dir)) {
-    counter++;
-    wfp += winnowing.wfp_for_file(
-      filepath,
-      filepath.replace(ctx.sourceDir, '')
-    );
+    //if(fs.lstatSync(filepath).size > winnowing.MIN_FILE_SIZE) 
+      counter++;
+      wfp += winnowing.wfp_for_file(
+        filepath,
+        filepath.replace(ctx.sourceDir, '')
+      );
 
-    if (counter % CHUNK_SIZE === 0) {
-      queue_scan(wfp, counter);
-      wfp = '';
-      counter = 0;
-    }
+      if (counter % CHUNK_SIZE === 0) {
+        queue_scan(wfp, counter);
+        wfp = '';
+        counter = 0;
+      }
   }
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);

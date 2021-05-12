@@ -168,80 +168,84 @@ function update_vuln_table(components) {
 function updateObligationTable(ctx) {
 
   const body_table = $('.otable tbody');
-  const obligations = ctx.obligations;
+  
+  //Avoids the case when the user brings back a previous scan without the license obligations table
+  if(ctx.hasOwnProperty('obligations')) 
+  {
+    const obligations = ctx.obligations;
 
-  let incompatible_licenses = new Set();
-  let incompatible_licenses_count = 0;
+    let incompatible_licenses = new Set();
+    let incompatible_licenses_count = 0;
 
-  $(body_table).html('');  	// Clean the previous data
-  $(body_table).next("tfoot").remove();	//Delete the previous footer
+    $(body_table).html('');  	// Clean the previous data
+    $(body_table).next("tfoot").remove();	//Delete the previous footer
 
-  //On each iteration one obligation is analized and is created one row.
-  //Also incompatible licenses are added to a set to compare them later
-  obligations.forEach(obligation => {
+    //On each iteration one obligation is analized and is created one row.
+    //Also incompatible licenses are added to a set to compare them later
+    obligations.forEach(obligation => {
 
-    //Create row
-    let row = $("<tr></tr>");
-    let license_name = Object.keys(obligation)[0];
-    let data = obligation[license_name][0];
+      //Create row
+      let row = $("<tr></tr>");
+      let license_name = Object.keys(obligation)[0];
+      let data = obligation[license_name][0];
 
-    //Add license name with tooltip  
-    row.append($(`<td> 
-                <a href="${data.obligations}" target="_blank" data-toggle="tooltip" 
-                title="OSADL license obligations"> ${license_name} </a> 
-                </td>`
-    ));
+      //Add license name with tooltip  
+      row.append($(`<td> 
+                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip" 
+                  title="OSADL license obligations"> ${license_name} </a> 
+                  </td>`
+      ));
 
-    let parameters = ["copyleft", "patent_hints", "incompatible_with"];
-    for (let index = 0; index < parameters.length; index++) {
+      let parameters = ["copyleft", "patent_hints", "incompatible_with"];
+      for (let index = 0; index < parameters.length; index++) {
 
-      if (data.hasOwnProperty(parameters[index]))
-        row.append($(`<td>${data[parameters[index]]}</td>`));
-      else
-        row.append($(`<td>--</td>`));
+        if (data.hasOwnProperty(parameters[index]))
+          row.append($(`<td>${data[parameters[index]]}</td>`));
+        else
+          row.append($(`<td>--</td>`));
 
-      //Incompatible license are added to the set.
-      if (parameters[index] == "incompatible_with" && data.hasOwnProperty("incompatible_with")) {
-        let incompatible_license_array = data[parameters[index]].split(',');
-        incompatible_license_array.forEach((item, index, array) => {
-          array[index] = array[index].trim(); //Remove any whitespace and add it to the set
-          if (!incompatible_licenses.has(array[index]))
-            incompatible_licenses.add(array[index]);
-        });
+        //Incompatible license are added to the set.
+        if (parameters[index] == "incompatible_with" && data.hasOwnProperty("incompatible_with")) {
+          let incompatible_license_array = data[parameters[index]].split(',');
+          incompatible_license_array.forEach((item, index, array) => {
+            array[index] = array[index].trim(); //Remove any whitespace and add it to the set
+            if (!incompatible_licenses.has(array[index]))
+              incompatible_licenses.add(array[index]);
+          });
+        }
+
       }
 
+      //Here is detected if there are a YES on copyleft field and change the text style to bold and red color
+      // let copyleft_element = $(row).children().eq(2);
+      // if (copyleft_element.text()==="yes") 
+      //   copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
+
+
+      $(body_table).append(row);
+    });
+
+    //Iterate over all the licenses names rows and check if there are some incompatible licenses.
+    $(body_table).children().each((index, row) => {
+      let license_element = $(row).children().eq(0);
+      if (incompatible_licenses.has(license_element.text().trim())) {
+        license_element.prepend('*');
+        license_element.css({ 'color': 'red', 'font-weight': 'bold' });
+        incompatible_licenses_count++;
+      }
+    });
+
+    //Add a foot to the table
+    if (incompatible_licenses_count > 0) {
+      let text = "*Note: License conflicts have been identified."
+      let tfoot = $(`<tfoot><tr><td colspan="5"><p>${text}</p></td></tr></tfoot>`);
+      tfoot.css({ 'color': 'red', 'font-weight': 'bold' });
+      $(body_table).after(tfoot);
+
     }
 
-    //Here is detected if there are a YES on copyleft field and change the text style to bold and red color
-    // let copyleft_element = $(row).children().eq(2);
-    // if (copyleft_element.text()==="yes") 
-    //   copyleft_element.css({'color': 'red', 'font-weight' : 'bold'});
-
-
-    $(body_table).append(row);
-  });
-
-  //Iterate over all the licenses names rows and check if there are some incompatible licenses.
-  $(body_table).children().each((index, row) => {
-    let license_element = $(row).children().eq(0);
-    if (incompatible_licenses.has(license_element.text().trim())) {
-      license_element.prepend('*');
-      license_element.css({ 'color': 'red', 'font-weight': 'bold' });
-      incompatible_licenses_count++;
-    }
-  });
-
-  //Add a foot to the table
-  if (incompatible_licenses_count > 0) {
-    let text = "*Note: License conflicts have been identified."
-    let tfoot = $(`<tfoot><tr><td colspan="5"><p>${text}</p></td></tr></tfoot>`);
-    tfoot.css({ 'color': 'red', 'font-weight': 'bold' });
-    $(body_table).after(tfoot);
-
+    $('.otable').show();
   }
-
-  $('.otable').show();
-
 
 }
 
