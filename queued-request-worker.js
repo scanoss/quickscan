@@ -23,7 +23,8 @@
  * sequentially.
  *
  */
-const fs = require('fs');
+const fs = require('original-fs');
+const fs_asar = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -35,17 +36,10 @@ const RETRY_MAP = {};
 var RUNNING = 0;
 var CHUNK_SIZE = 50;
 
-let TIMESTAMP = '';
+let TIMESTAMP = "quickscan-lite" + "1.2.2" + "05.12.21";
 
 onmessage = (e) => {
   
-  if(!TIMESTAMP) {
-    const package_json=JSON.parse(fs.readFileSync('./package.json'));
-    TIMESTAMP = `${package_json.name} ${package_json.versiondate} ${package_json.version}`;  
-    console.log(typeof(TIMESTAMP));
-    console.log(TIMESTAMP);
-  }
-
 
   CHUNK_SIZE = e.data.chunk;
   next();
@@ -99,7 +93,6 @@ function scan_wfp (wfp, counter, file, context) {
         return bodyAsJson;
       } catch (e) {
         console.log('Unparseable body: ' + responseBodyAsText);
-        //Promise.reject({ body: responseBodyAsText, type: 'unparseable' });
         
         //Throw an error if the JSON is not parseable.
         //It is catched on the promises chain and then scan_worker.onerror is called.

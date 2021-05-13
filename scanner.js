@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-const fs = require('fs');
+const fs = require('original-fs');
 const os = require('os');
 const winnowing = require('./winnowing');
 const path = require('path');
@@ -27,9 +27,6 @@ var SCANOSS_DIR;
 var CHUNK_SIZE = 100;
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
 
-// Prevent to analize .asar files as directories
-// For references go to: https://www.electronjs.org/docs/api/process  
-process.noAsar = true;
 
 var ctx = {};
 
@@ -144,6 +141,7 @@ function get_scan_dir(path) {
 }
 
 function countFiles(dir) {
+
   let index = 0;
   const files = fs.readdirSync(dir);
   files.forEach((file) => {
@@ -159,13 +157,13 @@ function countFiles(dir) {
       stats.isFile() &&
       !stats.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(filepath))
-      //stats.size>winnowing.MIN_FILE_SIZE) 
       )
       
     {
       index++;
     }
   });
+
   return index;
 }
 
@@ -190,8 +188,8 @@ async function* walk(dir) {
 async function recursive_scan(dir) {
   let wfp = '';
   let counter = 0;
+
   for await (const filepath of walk(dir)) {
-    //if(fs.lstatSync(filepath).size > winnowing.MIN_FILE_SIZE) 
       counter++;
       wfp += winnowing.wfp_for_file(
         filepath,
@@ -207,6 +205,7 @@ async function recursive_scan(dir) {
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);
   }
+
   return counter;
 }
 

@@ -59,9 +59,6 @@ a list of WFP fingerprints with their corresponding line numbers.
 const isWin = process.platform === 'win32';
 const pathSeparator = isWin ? '\\' : '/';
 
-// Prevent to analize .asar files as directories
-// For references go to: https://www.electronjs.org/docs/api/process  
-process.noAsar = true;
 
 //  List of extensions that are ignored
 const FILTERED_EXT = [
@@ -194,7 +191,7 @@ const FILTERED_DIRS = [
 ];
 
 const crypto = require('crypto');
-const fs = require('fs');
+const fs = require('original-fs');
 const path = require('path');
 const isBinaryFileSync = require("isbinaryfile").isBinaryFileSync;
 
@@ -263,9 +260,7 @@ function is_filtered_dir(dir, sep = pathSeparator) {
 function wfp_for_file (file, filename) {
   let contents = ''
   let size = 0;
-  try {
-      //readFileSync buffers the entire file. 
-      //To minimize memory costs use streaming via fs.createReadStream()
+  try {  
       contents = fs.readFileSync(file); 
       size = fs.lstatSync(file).size;
   } catch (error) {
