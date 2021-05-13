@@ -17,7 +17,7 @@
  */
 'use strict';
 const scanner = require('./scanner');
-const fs = require('fs');
+const fs = require('original-fs');
 var Chart = require('chart.js');
 const { remote } = require('electron'),
   dialog = remote.dialog,
