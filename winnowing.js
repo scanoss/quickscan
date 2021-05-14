@@ -59,6 +59,7 @@ a list of WFP fingerprints with their corresponding line numbers.
 const isWin = process.platform === 'win32';
 const pathSeparator = isWin ? '\\' : '/';
 
+
 //  List of extensions that are ignored
 const FILTERED_EXT = [
   '.1',
@@ -190,8 +191,13 @@ const FILTERED_DIRS = [
 ];
 
 const crypto = require('crypto');
-const fs = require('fs');
+const fs = require('original-fs');
 const path = require('path');
+const isBinaryFileSync = require("isbinaryfile").isBinaryFileSync;
+
+//Filtering files sizes. DO NO CHANGE.
+const MAX_FILE_SIZE = 4  * 1024 * 1024 
+const MIN_FILE_SIZE = 256
 
 // Winnowing configuration. DO NOT CHANGE.
 const GRAM = 30;
@@ -210,6 +216,8 @@ module.exports = {
   wfp_for_file,
   FILTERED_DIRS,
   FILTERED_EXT,
+  MIN_FILE_SIZE,
+  MAX_FILE_SIZE,
   is_filtered_dir,
 };
 
@@ -251,17 +259,24 @@ function is_filtered_dir(dir, sep = pathSeparator) {
  */
 function wfp_for_file (file, filename) {
   let contents = ''
-  try {
-    contents = fs.readFileSync(file);
+  let size = 0;
+  try {  
+      contents = fs.readFileSync(file); 
+      size = fs.lstatSync(file).size;
   } catch (error) {
-    console.log("Error reading file: ", filename)
-    return "";
+      console.log("Error reading file: ", filename)
+      console.error(error);
+      throw error;
+      //return "";
   }
 
   let file_md5 = crypto.createHash('md5').update(contents).digest('hex');
   let wfp = `file=${file_md5},${contents.length},${filename}\n`;
-  wfp += calc_wfp(contents);
-  return wfp;
+  
+  if((!isBinaryFileSync(contents, size)) && contents.lenght<MAX_FILE_SIZE)  
+    wfp += calc_wfp(contents);
+  
+    return wfp;
 }
 
 function calc_wfp(contents) {

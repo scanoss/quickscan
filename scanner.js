@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-const fs = require('fs');
+const fs = require('original-fs');
 const os = require('os');
 const winnowing = require('./winnowing');
 const path = require('path');
@@ -26,6 +26,7 @@ var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
 var CHUNK_SIZE = 100;
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
+
 
 var ctx = {};
 
@@ -140,6 +141,7 @@ function get_scan_dir(path) {
 }
 
 function countFiles(dir) {
+
   let index = 0;
   const files = fs.readdirSync(dir);
   files.forEach((file) => {
@@ -155,17 +157,19 @@ function countFiles(dir) {
       stats.isFile() &&
       !stats.isSymbolicLink() &&
       !winnowing.FILTERED_EXT.includes(path.extname(filepath))
-    ) {
+      )
+      
+    {
       index++;
     }
   });
+
   return index;
 }
 
 async function* walk(dir) {
   for await (const d of await fs.promises.opendir(dir)) {
     const entry = path.join(dir, d.name);
-    // const stats = fs.lstatSync(filepath);
     if (
       d.isDirectory() &&
       !d.isSymbolicLink() &&
@@ -175,7 +179,7 @@ async function* walk(dir) {
     else if (
       d.isFile() &&
       !d.isSymbolicLink() &&
-      !winnowing.FILTERED_EXT.includes(path.extname(entry))
+      !winnowing.FILTERED_EXT.includes(path.extname(entry)) 
     )
       yield entry;
   }
@@ -184,22 +188,24 @@ async function* walk(dir) {
 async function recursive_scan(dir) {
   let wfp = '';
   let counter = 0;
-  for await (const filepath of walk(dir)) {
-    counter++;
-    wfp += winnowing.wfp_for_file(
-      filepath,
-      filepath.replace(ctx.sourceDir, '')
-    );
 
-    if (counter % CHUNK_SIZE === 0) {
-      queue_scan(wfp, counter);
-      wfp = '';
-      counter = 0;
-    }
+  for await (const filepath of walk(dir)) {
+      counter++;
+      wfp += winnowing.wfp_for_file(
+        filepath,
+        filepath.replace(ctx.sourceDir, '')
+      );
+
+      if (counter % CHUNK_SIZE === 0) {
+        queue_scan(wfp, counter);
+        wfp = '';
+        counter = 0;
+      }
   }
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);
   }
+
   return counter;
 }
 
