@@ -273,10 +273,10 @@ function wfp_for_file (file, filename) {
   let file_md5 = crypto.createHash('md5').update(contents).digest('hex');
   let wfp = `file=${file_md5},${contents.length},${filename}\n`;
   
-  if((!isBinaryFileSync(contents, size)) && contents.lenght<MAX_FILE_SIZE)  
+  if((!isBinaryFileSync(contents, size)) && size<MAX_FILE_SIZE)  
     wfp += calc_wfp(contents);
   
-    return wfp;
+  return wfp;
 }
 
 function calc_wfp(contents) {

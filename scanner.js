@@ -241,7 +241,7 @@ async function scanFolder(initctx) {
 
   // Process directory in chunks
   console.log('Starting Walk ');
-  await recursive_scan(ctx.sourceDir);
+  await recursive_scan(ctx.sourceDir); 
   console.log('Walk completed');
 }
 
