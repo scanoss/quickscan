@@ -526,6 +526,7 @@ function startScanningDirectory(path) {
   };
   $('.counter').html(ctx.total);
 
+  if(ctx.total!=0) {
   // Using web workers
   scan_worker.postMessage({
     ctx: ctx,
@@ -536,6 +537,12 @@ function startScanningDirectory(path) {
   // disable buttons
   disableButtons();
 
+  }else {
+  alert('No files founded to scan');
+  $('.loading').hide();
+  $('.intro').show();
+
+  }
 }
 
 
