@@ -21,6 +21,8 @@ const winnowing = require('./winnowing');
 const path = require('path');
 const { request } = require('http');
 
+const MAX_FILES = 10000;
+
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
@@ -188,9 +190,10 @@ async function* walk(dir) {
 async function recursive_scan(dir) {
   let wfp = '';
   let counter = 0;
-
+  let totalCounter = 0;
   for await (const filepath of walk(dir)) {
       counter++;
+      totalCounter++;
       wfp += winnowing.wfp_for_file(
         filepath,
         filepath.replace(ctx.sourceDir, '')
@@ -201,6 +204,9 @@ async function recursive_scan(dir) {
         wfp = '';
         counter = 0;
       }
+
+      if(totalCounter>=MAX_FILES)
+        break;
   }
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);
@@ -406,4 +412,5 @@ function update_vulns (ctx, json) {
 module.exports = {
   scanFolder,
   countFiles,
+  MAX_FILES
 };

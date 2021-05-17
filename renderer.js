@@ -519,8 +519,15 @@ function startScanningDirectory(path) {
 
   $('.loading').show();
   $('.counter').html('0');
+  
+  let totalFiles = scanner.countFiles(path)
+  if(totalFiles>=scanner.MAX_FILES){
+    alert(`Quickscan support only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe scan will continue ignoring some files.`);
+    totalFiles=scanner.MAX_FILES;
+  }
+  
   let ctx = {
-    total: scanner.countFiles(path),
+    total: totalFiles,
     sourceDir: path,
     date: formatDate(new Date()),
   };
