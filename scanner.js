@@ -20,6 +20,7 @@ const os = require('os');
 const winnowing = require('./winnowing');
 const path = require('path');
 const { request } = require('http');
+const { count } = require('console');
 
 const MAX_FILES = 10000;
 
@@ -142,6 +143,23 @@ function get_scan_dir(path) {
   return path.match(/[^\\\/]+$/);
 }
 
+
+function countFilesOnWFP(text) {
+  let count = (text.match(/file=/g)||[]).length
+  console.log(count);
+  return count;
+}
+
+function getWFP(filepath) {
+  let content = fs.readFileSync(filepath,{encoding:'utf8', flag:'r'});
+  return content;
+
+}
+
+function getFileExtention(filepath){
+  return filepath.split(".").pop().toLocaleLowerCase();
+}
+
 function countFiles(dir) {
 
   let index = 0;
@@ -162,7 +180,15 @@ function countFiles(dir) {
       )
       
     {
-      index++;
+      //If there are a wfp file, explore it and add to count
+      if( getFileExtention(filepath) == "wfp") {
+        content = fs.readFileSync(filepath,{encoding:'utf8', flag:'r'});
+        index += countFilesOnWFP(content);
+      }else{
+        index++;
+      }
+      
+      
     }
   });
 
@@ -192,17 +218,25 @@ async function recursive_scan(dir) {
   let counter = 0;
   let totalCounter = 0;
   for await (const filepath of walk(dir)) {
-      counter++;
-      totalCounter++;
-      wfp += winnowing.wfp_for_file(
-        filepath,
-        filepath.replace(ctx.sourceDir, '')
-      );
+      if(getFileExtention(filepath)!="wfp") {
+        counter++;
+        totalCounter++;
+        wfp += winnowing.wfp_for_file(
+          filepath,
+          filepath.replace(ctx.sourceDir, '')
+        );
 
-      if (counter % CHUNK_SIZE === 0) {
-        queue_scan(wfp, counter);
-        wfp = '';
-        counter = 0;
+        if (counter % CHUNK_SIZE === 0) {
+          queue_scan(wfp, counter);
+          wfp = '';
+          counter = 0;
+        }
+      }else{
+        let wfps = getWFP(filepath);
+        let count = countFilesOnWFP(wfps);
+        console.log(count);
+        queue_scan(wfps,count);
+
       }
 
       if(totalCounter>=MAX_FILES)
@@ -240,7 +274,7 @@ async function scanFolder(initctx) {
   // console.log(`Result file: ${ctx.resultfile}`)
   fs.writeFileSync(
     ctx.csvbom,
-    'FILE,MATCH TYPE,% MATCH,VENDOR,COMPONENT,VERSION,URL,LICENSE,COPYRIGHT,VULNERABILITIES' +
+    'FILE,MATCH TYPE,% MATCH,VENDOR,COMPONENT,VERSION,URL,LICENSE,URL LICENSE,COPYRIGHT,VULNERABILITIES' +
       os.EOL
   );
   fs.writeFileSync(ctx.resultfile, `{${os.EOL}`);
@@ -272,12 +306,13 @@ function append_to_results (ctx, json, done) {
           ? value.version
           : `${value.version}-${value.latest}`;
       let license = value.licenses.length > 0 ? value.licenses[0].name : '';
+      let URLlicense = value.licenses.length > 0 ? value.licenses[0].obligations : '' ;
       let copyright =
         value.copyrights.length > 0 ? value.copyrights[0].name : '';
       let vulns = value.vulnerabilities.map((v) => v.CVE).join(',');
       fs.appendFileSync(
         ctx.csvbom,
-        `${key},${value.id},${value.matched},${value.vendor},${value.component},${versions},${value.url},${license},${copyright},"${vulns}"\n`
+        `${key},${value.id},${value.matched},${value.vendor},${value.component},${versions},${value.url},${license},${URLlicense},${copyright},"${vulns}"\n`
       );
     }
     if (index === count && done) {
