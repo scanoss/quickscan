@@ -522,7 +522,7 @@ function startScanningDirectory(path) {
   
   let totalFiles = scanner.countFiles(path)
   if(totalFiles>=scanner.MAX_FILES){
-    alert(`Quickscan support only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe scan will continue ignoring some files.`);
+    alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
     totalFiles=scanner.MAX_FILES;
   }
   
@@ -545,7 +545,7 @@ function startScanningDirectory(path) {
   disableButtons();
 
   }else {
-  alert('No files founded to scan');
+  alert('No files to scan');
   $('.loading').hide();
   $('.intro').show();
 

@@ -23,7 +23,6 @@ const { request } = require('http');
 const { count } = require('console');
 
 const MAX_FILES = 10000;
-
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
@@ -215,22 +214,25 @@ async function* walk(dir) {
 
 async function recursive_scan(dir) {
   let wfp = '';
+  let preWfp = '';
   let counter = 0;
   let totalCounter = 0;
   for await (const filepath of walk(dir)) {
       if(getFileExtention(filepath)!="wfp") {
         counter++;
         totalCounter++;
-        wfp += winnowing.wfp_for_file(
+        preWfp = winnowing.wfp_for_file(
           filepath,
           filepath.replace(ctx.sourceDir, '')
         );
-
-        if (counter % CHUNK_SIZE === 0) {
+        
+        if (wfp.length + preWfp.length >= winnowing.MAX_SIZE_CHUNK) {
           queue_scan(wfp, counter);
           wfp = '';
           counter = 0;
         }
+        wfp +=preWfp;
+
       }else{
         let wfps = getWFP(filepath);
         let count = countFilesOnWFP(wfps);
@@ -245,7 +247,7 @@ async function recursive_scan(dir) {
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);
   }
-
+  console.log(totalCounter);
   return counter;
 }
 
