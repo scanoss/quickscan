@@ -145,11 +145,12 @@ function get_scan_dir(path) {
 
 function countFilesOnWFP(text) {
   let count = (text.match(/file=/g)||[]).length
-  console.log(count);
   return count;
 }
 
-function getWFP(filepath) {
+
+
+function getWfpFromFile(filepath) {
   let content = fs.readFileSync(filepath,{encoding:'utf8', flag:'r'});
   return content;
 
@@ -217,8 +218,11 @@ async function recursive_scan(dir) {
   let preWfp = '';
   let counter = 0;
   let totalCounter = 0;
+  
+  loop:
   for await (const filepath of walk(dir)) {
-      if(getFileExtention(filepath)!="wfp") {
+      
+    if(getFileExtention(filepath)!="wfp") {
         counter++;
         totalCounter++;
         preWfp = winnowing.wfp_for_file(
@@ -234,15 +238,32 @@ async function recursive_scan(dir) {
         wfp +=preWfp;
 
       }else{
-        let wfps = getWFP(filepath);
-        let count = countFilesOnWFP(wfps);
-        console.log(count);
-        queue_scan(wfps,count);
+        
+        //Particular case when a wfp file it is found
+        let wfpString = getWfpFromFile(filepath);
+        let wfpArray = wfpString.split('file=');
+        wfpArray.shift(); //Removes the first element because it's empty
 
+        for(preWfp of wfpArray) {
+          preWfp = 'file=' + preWfp; //Add 'file=' because it was removed when the array was splited.
+          totalCounter++;
+          counter++;
+
+          if (wfp.length + preWfp.length >= winnowing.MAX_SIZE_CHUNK) {
+             queue_scan(wfp, counter);
+             wfp = '';
+             counter = 0;
+             console.log('pass');
+          }
+          wfp+=preWfp;
+
+          if(totalCounter>=MAX_FILES)
+            break loop;
+        }
       }
 
       if(totalCounter>=MAX_FILES)
-        break;
+        break loop;
   }
   if (dir === ctx.sourceDir && wfp !== '') {
     queue_scan(wfp, counter);
