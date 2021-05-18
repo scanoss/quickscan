@@ -95,7 +95,7 @@ request_worker.onmessage = (e) => {
 };
 
 request_worker.onerror = (e) => {
-  console.log('Received error while scanning. Preparing for recovery');
+  console.log(`Received error while scanning. Preparing for recovery ${e.message}`);
   let pending_dir = `${ctx.scandir}/pending`;
   fs.mkdirSync(pending_dir);
   const files = fs.readdirSync(QUEUE_DIR);

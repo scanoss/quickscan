@@ -497,10 +497,6 @@ function formatDate(date) {
 function startScanningDirectory(path) {
   $('#resume-scan').hide();
   $('.otable').hide(); //Hide obligations table
-  timerInstance.start();
-  timerInstance.addEventListener('secondsUpdated', function (e) {
-    $('#elapsed').html(timerInstance.getTimeValues().toString());
-  });
   if (licenseChart) {
     licenseChart.destroy();
   }
@@ -525,7 +521,12 @@ function startScanningDirectory(path) {
     alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
     totalFiles=scanner.MAX_FILES;
   }
-  
+
+  timerInstance.start();
+  timerInstance.addEventListener('secondsUpdated', function (e) {
+    $('#elapsed').html(timerInstance.getTimeValues().toString());
+  });
+
   let ctx = {
     total: totalFiles,
     sourceDir: path,
