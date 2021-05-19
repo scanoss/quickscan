@@ -53,11 +53,13 @@ function fetch_licenses_obligations() {
                 postMessage(obligations);
             } else {
                 index++;
-                fetch_licenses_obligations();
+                return fetch_licenses_obligations();
             }
         })
         .catch((e) => {
-            throw e;
+            console.log(`error: ${e.message}`);
+            index++;
+            return fetch_licenses_obligations();
         });
 };
 

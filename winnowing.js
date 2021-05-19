@@ -198,6 +198,8 @@ const isBinaryFileSync = require("isbinaryfile").isBinaryFileSync;
 //Filtering files sizes. DO NO CHANGE.
 const MAX_FILE_SIZE = 4  * 1024 * 1024 
 const MIN_FILE_SIZE = 256
+const MAX_SIZE_CHUNK = 64 * 1000
+
 
 // Winnowing configuration. DO NOT CHANGE.
 const GRAM = 30;
@@ -218,6 +220,7 @@ module.exports = {
   FILTERED_EXT,
   MIN_FILE_SIZE,
   MAX_FILE_SIZE,
+  MAX_SIZE_CHUNK,
   is_filtered_dir,
 };
 
@@ -273,10 +276,13 @@ function wfp_for_file (file, filename) {
   let file_md5 = crypto.createHash('md5').update(contents).digest('hex');
   let wfp = `file=${file_md5},${contents.length},${filename}\n`;
   
-  if((!isBinaryFileSync(contents, size)) && contents.lenght<MAX_FILE_SIZE)  
-    wfp += calc_wfp(contents);
-  
-    return wfp;
+  if((!isBinaryFileSync(contents, size)) && size<MAX_FILE_SIZE)  {
+    let preWfp = calc_wfp(contents);
+    if (preWfp.length <= MAX_SIZE_CHUNK) {
+      wfp+=preWfp;
+    }
+  }
+  return wfp;
 }
 
 function calc_wfp(contents) {

@@ -91,7 +91,7 @@ scan_worker.onerror = (e) => {
   $('.loading').hide();
   $('.alert').show();
   $('#new-sbom').removeClass('disabled');
-  $('#new-sbom').on('click', scanDirectory);
+  $('#new-sbom').on('click', scanDirectoryButton);
   $('.reports-btn').removeClass('disabled');
   $('#resume-scan a').removeClass('disabled');
   timerInstance.pause();
@@ -102,7 +102,7 @@ scan_worker.onerror = (e) => {
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
-  alert(`Ups, something went wrong parsing a JSON object \n ${e.message}`);
+  alert(`Oops, something went wrong parsing a JSON object \n ${e.message}`);
 };
 
 obligation_worker.onerror = (e) => {
@@ -320,7 +320,7 @@ function scan_callback(ctx) {
     // SCAN DONE
     timerInstance.pause();
     $('#new-sbom').removeClass('disabled');
-    $('#new-sbom').on('click', scanDirectory);
+    $('#new-sbom').on('click', scanDirectoryButton);
 
     $('.reports-btn').removeClass('disabled');
     $('.refresh button').show();
@@ -493,13 +493,10 @@ function formatDate(date) {
   return formatted_date;
 }
 
-function scanDirectory(ev) {
+
+function startScanningDirectory(path) {
   $('#resume-scan').hide();
   $('.otable').hide(); //Hide obligations table
-  timerInstance.start();
-  timerInstance.addEventListener('secondsUpdated', function (e) {
-    $('#elapsed').html(timerInstance.getTimeValues().toString());
-  });
   if (licenseChart) {
     licenseChart.destroy();
   }
@@ -511,23 +508,33 @@ function scanDirectory(ev) {
   }
   $('.alert, .intro, .report, .ctable, .vtable').hide();
 
-  let options = { properties: ['openDirectory'] };
-
-  let dir = dialog.showOpenDialogSync(options);
-  if (dir === undefined) {
+  if (path === undefined) {
     console.log('No directory selected');
     return;
   }
 
   $('.loading').show();
   $('.counter').html('0');
+  
+  let totalFiles = scanner.countFiles(path)
+  if(totalFiles>=scanner.MAX_FILES){
+    alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
+    totalFiles=scanner.MAX_FILES;
+  }
+
+  timerInstance.start();
+  timerInstance.addEventListener('secondsUpdated', function (e) {
+    $('#elapsed').html(timerInstance.getTimeValues().toString());
+  });
+
   let ctx = {
-    total: scanner.countFiles(dir[0]),
-    sourceDir: dir[0],
+    total: totalFiles,
+    sourceDir: path,
     date: formatDate(new Date()),
   };
   $('.counter').html(ctx.total);
 
+  if(ctx.total!=0) {
   // Using web workers
   scan_worker.postMessage({
     ctx: ctx,
@@ -537,6 +544,20 @@ function scanDirectory(ev) {
 
   // disable buttons
   disableButtons();
+
+  }else {
+  alert('No files to scan');
+  $('.loading').hide();
+  $('.intro').show();
+
+  }
+}
+
+
+function scanDirectoryButton(ev) {
+  let options = { properties: ['openDirectory'] };
+  let dir = dialog.showOpenDialogSync(options);
+  startScanningDirectory(dir[0]);
 }
 
 function disableButtons() {
@@ -553,6 +574,22 @@ $(function () {
   $('.report').hide();
   $('.loading').hide();
   $('#resume-scan').hide();
-  $('#new-sbom').on('click', scanDirectory);
+  $('#new-sbom').on('click', scanDirectoryButton);
 });
 
+
+
+
+/* DRAG AND DROP SECTION */
+document.addEventListener('drop', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  startScanningDirectory(event.dataTransfer.files[0].path);
+
+});
+
+document.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+});
+/* DRAG AND DROP SECTION */
