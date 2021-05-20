@@ -515,16 +515,25 @@ function startScanningDirectory(path) {
 
   $('.loading').show();
   $('.counter').html('0');
-  
+
+  $('.scanfolder').text(path);
+  $('.progress-bar').css('width', `0%`);
+  $('.progress-bar').text(`0%`);
+  $('.progress-bar').attr('aria-valuenow', 0);
+
   let totalFiles = scanner.countFiles(path)
   if(totalFiles>=scanner.MAX_FILES){
     alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
     totalFiles=scanner.MAX_FILES;
   }
 
+
+
+
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
     $('#elapsed').html(timerInstance.getTimeValues().toString());
+    $('#elapsed-init').html(timerInstance.getTimeValues().toString());
   });
 
   let ctx = {
@@ -533,6 +542,9 @@ function startScanningDirectory(path) {
     date: formatDate(new Date()),
   };
   $('.counter').html(ctx.total);
+
+  //Adding progress bar 0% while the screen Scanning Files is showing
+  
 
   if(ctx.total!=0) {
   // Using web workers
