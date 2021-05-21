@@ -65,6 +65,28 @@ body {
   color: #666666;
 }
 
+.row-report{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.filetree-container{
+  display: flex;
+  float: left;
+  justify-content: center;
+  background-color: #790600;
+  border-radius: 10px;
+  height: 95%;
+  width: 15%;
+  margin: 5px;
+
+  
+}
+
 .chart {
   max-width: 500px;
   max-height: 400px;
