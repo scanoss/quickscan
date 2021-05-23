@@ -55,6 +55,10 @@ function assignCtx(ctx) {
   globctx = ctx;
 }
 
+//This parameter configures the maximum number of licences shown in the pie chart.
+//The rest of them are grouped into a category called Others
+const maxDataOnPieChar =8;
+
 const chartColors = {
   red: '#790600',
   orange: '#FF7F11',
@@ -114,7 +118,6 @@ obligation_worker.onmessage = (e) => {
   updateObligationTable(globctx);
   save_ctx(globctx);
 };
-
 
 
 function resumeScan(scandir) {
@@ -285,14 +288,40 @@ function updateCharts(ctx) {
     .sort(([, a], [, b]) => b.counter - a.counter)
     .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
 
-  licenseChart.data.labels = Object.keys(sortedLics).slice(0, 8);
-  licenseChart.data.datasets[0].data = Object.values(sortedLics).slice(0, 8);
-  licenseChart.update();
+    let labels = Object.keys(sortedLics);
+    let datasets = Object.values(sortedLics);
+    
+  //When there are more licenses than maxDataOnPieChar, they are grouped into a data segment called Others.
+  if(labels.length > maxDataOnPieChar){
+    
+    licenseChart.data.datasets[0].data=datasets.slice(0,maxDataOnPieChar);
+    let sum = datasets.slice(maxDataOnPieChar).reduce((acc,current)=> acc+current);
+    licenseChart.data.datasets[0].data[maxDataOnPieChar]=sum; 
+    
+    //This global variable is used by tooltip callback on the pie chart
+    globctx.otherTooltipTitle=`Others: ${sum}`;
+
+    licenseChart.data.labels=labels.slice(0,maxDataOnPieChar);
+    licenseChart.data.labels[maxDataOnPieChar]='Others';
+
+    let str = [];
+    datasets.slice(maxDataOnPieChar).forEach((data,index) => {
+      let name = labels[index+maxDataOnPieChar];
+      str.push(new Array(`${name}: ${data}`));
+    })
+    //This global variable is used by tooltip callback on the pie chart
+    globctx.otherTooltipLabel=str;  
+    
+  }else{
+    licenseChart.data.datasets[0].data = datasets;
+    licenseChart.data.labels=labels;
+  }
 
   ossChart.data.datasets[0].data = [ctx.osscount];
   ossChart.data.datasets[1].data = [ctx.total - ctx.osscount];
   ossChart.update();
 
+  licenseChart.update();
   updateVulnChart(ctx);
 }
 
@@ -355,12 +384,37 @@ function createCharts() {
       },
       onClick: (e, elements) => {
         if (elements.length > 0) {
+          if(elements[0]._index<c) {
           let license = elements[0]._chart.data.labels[elements[0]._index];
+          $('.hoverlicense').show();
           $('.hoverlicense').text(license);
           update_table(globctx.licenses[license].components);
           $('.vtable').hide();
           $('.ctable').show();
+          }else{
+            //When the category Others is clicked, hide the vuln and components table
+            $('.hoverlicense').hide();
+            $('.ctable').hide();
+            $('.vtable').hide();
+          }
         }
+      },
+      tooltips: {
+        callbacks:{
+          label: function (tooltipItem, data) {
+            if(tooltipItem.index==maxDataOnPieChar)
+              return globctx.otherTooltipLabel
+            else{
+                const quantity = data.datasets[0].data[tooltipItem.index];
+                const name = data.labels[tooltipItem.index]
+                return `${name}: ${quantity}` ;
+            }
+          },
+          title: function (tooltipItem, obj){
+              if(tooltipItem[0].index==maxDataOnPieChar)
+                return globctx.otherTooltipTitle;
+          },
+        },
       },
     },
   });
@@ -542,9 +596,6 @@ function startScanningDirectory(path) {
     date: formatDate(new Date()),
   };
   $('.counter').html(ctx.total);
-
-  //Adding progress bar 0% while the screen Scanning Files is showing
-  
 
   if(ctx.total!=0) {
   // Using web workers
