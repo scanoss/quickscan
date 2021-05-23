@@ -16,7 +16,7 @@
   "author": "SCANOSS <info@scanoss.com>",
   "license": "GPL-2.0+",
   "devDependencies": {
-    "electron": "^11.3.0",
+    "electron": "^11.4.7",
     "electron-builder": "^22.9.1",
     "electron-notarize": "^1.0.0"
   },
