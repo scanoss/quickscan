@@ -226,6 +226,7 @@ function updateObligationTable(ctx) {
     $(body_table).children().each((index, row) => {
       let license_element = $(row).children().eq(0);
       if (incompatible_licenses.has(license_element.text().trim())) {
+        $(row).addClass("table-danger");
         license_element.prepend('*');
         license_element.css({ 'color': 'red', 'font-weight': 'bold' });
         incompatible_licenses_count++;
