@@ -383,21 +383,24 @@ function createCharts() {
         text: 'Top Licenses',
       },
       onClick: (e, elements) => {
-        if (elements.length > 0) {
-          if(elements[0]._index<c) {
-          let license = elements[0]._chart.data.labels[elements[0]._index];
-          $('.hoverlicense').show();
-          $('.hoverlicense').text(license);
-          update_table(globctx.licenses[license].components);
-          $('.vtable').hide();
-          $('.ctable').show();
-          }else{
-            //When the category Others is clicked, hide the vuln and components table
-            $('.hoverlicense').hide();
-            $('.ctable').hide();
+          if (elements.length > 0) {
+            if(elements[0]._index<maxDataOnPieChar) {
+            let license = elements[0]._chart.data.labels[elements[0]._index];
+            $('.hoverlicense').show();
+            $('.hoverlicense').text(license);
+            update_table(globctx.licenses[license].components);
             $('.vtable').hide();
+            $('.ctable').show();
+            }else{
+              //When the category Others is clicked, hide the vuln and components table
+              $('.hoverlicense').hide();
+              $('.ctable').hide();
+              $('.vtable').hide();
+            }
           }
-        }
+      },
+      legend: {
+        onClick: (e, elements) => {}, //Avoids hide-show options when legends are pressed.
       },
       tooltips: {
         callbacks:{
@@ -437,6 +440,9 @@ function createCharts() {
           stacked: true,
         },
       ],
+    },
+    legend: {
+      onClick: (e, elements) => {}, //Avoids hide-show options when legends are pressed.
     },
     title: {
       display: true,
