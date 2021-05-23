@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 'use strict';
 const scanner = require('./scanner');
 const fs = require('original-fs');
@@ -24,6 +25,8 @@ const { remote } = require('electron'),
   app = remote.app,
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
+const dirTree = require("directory-tree");
+
 
 
 window.$ = window.jQuery = require('jquery');
@@ -131,6 +134,8 @@ function resumeScan(scandir) {
   });
 }
 
+
+
 function update_table(components) {
   let tbody = '.upgradeable tbody';
   $(tbody).html('');
@@ -146,6 +151,8 @@ function update_table(components) {
     }
   }
 }
+
+
 
 function update_vuln_table(components) {
   let tbody = '.upgradeable tbody';
@@ -165,12 +172,14 @@ function update_vuln_table(components) {
   }
 }
 
+
+
 function updateObligationTable(ctx) {
 
   const body_table = $('.otable tbody');
-  
+
   //Avoids the case when the user brings back a previous scan without the license obligations table
-  if(ctx.hasOwnProperty('obligations')) 
+  if(ctx.hasOwnProperty('obligations'))
   {
     const obligations = ctx.obligations;
 
@@ -189,10 +198,10 @@ function updateObligationTable(ctx) {
       let license_name = Object.keys(obligation)[0];
       let data = obligation[license_name][0];
 
-      //Add license name with tooltip  
-      row.append($(`<td> 
-                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip" 
-                  title="OSADL license obligations"> ${license_name} </a> 
+      //Add license name with tooltip
+      row.append($(`<td>
+                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip"
+                  title="OSADL license obligations"> ${license_name} </a>
                   </td>`
       ));
 
@@ -242,6 +251,8 @@ function updateObligationTable(ctx) {
   }
 
 }
+
+
 
 function updateVulnChart(ctx) {
   if (ctx.vulns && Object.keys(ctx.vulns).length > 0) {
@@ -340,6 +351,8 @@ function scan_callback(ctx) {
 
   }
 }
+
+
 
 function createCharts() {
   licenseChart = new Chart($('#license-chart'), {
@@ -454,6 +467,9 @@ function createCharts() {
 }
 
 
+
+
+
 function initReport(ctx) {
   $('.report').show();
   $('.scanfolder').text(ctx.sourceDir);
@@ -464,6 +480,8 @@ function initReport(ctx) {
   $('#vuln-chart').hide();
   createCharts();
 }
+
+
 
 function destroyCharts() {
   if (licenseChart) {
@@ -476,6 +494,8 @@ function destroyCharts() {
     vulnChart.destroy();
   }
 }
+
+
 
 function formatDate(date) {
   let formatted_date =
@@ -492,6 +512,8 @@ function formatDate(date) {
     date.getSeconds();
   return formatted_date;
 }
+
+
 
 function scanDirectory(ev) {
   $('#resume-scan').hide();
@@ -519,6 +541,11 @@ function scanDirectory(ev) {
     return;
   }
 
+
+
+
+
+
   $('.loading').show();
   $('.counter').html('0');
   let ctx = {
@@ -538,6 +565,22 @@ function scanDirectory(ev) {
   // disable buttons
   disableButtons();
 }
+
+function filetree() {
+  
+
+
+
+}
+
+
+
+// fs.readdirAsync(dir).then()
+
+
+
+
+
 
 function disableButtons() {
   $('#resume-scan a').addClass('disabled');
