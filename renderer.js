@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-'use strict';
+/* 'use strict'; */
 const scanner = require('./scanner');
 const fs = require('original-fs');
 var Chart = require('chart.js');
@@ -26,6 +26,15 @@ const { remote } = require('electron'),
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
 const dirTree = require("directory-tree");
+/* const TreeView = require("./treejs-master/tree");
+const TreeNode = require("./treejs-master/tree");
+const TreeView = require("./treejs-master/tree.min.js");
+const TreeNode = require("./treejs-master/tree.min.js"); */
+const $ = require('jquery');
+
+
+
+
 
 
 
@@ -468,6 +477,20 @@ function createCharts() {
 
 
 
+/* function treeHandler(ctx){
+  const jsonTree = dirTree(ctx.sourceDir);
+  console.log(jsonTree);
+  console.log('-------------');
+  console.log(jsonTree.children);
+  console.log('-------------');
+  console.log(jsonTree.children.name);
+  for (item in jsonTree.children){
+    console.log(`${item.path}`)
+  }
+}
+ */
+
+ 
 
 
 function initReport(ctx) {
@@ -479,6 +502,13 @@ function initReport(ctx) {
   $('.matches').text('0');
   $('#vuln-chart').hide();
   createCharts();
+/*   treeHandler(ctx) */
+  const jsonTree = dirTree(ctx.sourceDir);
+  const dataTree = [jsonTree];
+  console.log(dataTree);
+  $('.filetree-container').tree({
+    data: dataTree,
+  });
 }
 
 
@@ -566,12 +596,7 @@ function scanDirectory(ev) {
   disableButtons();
 }
 
-function filetree() {
-  
 
-
-
-}
 
 
 

@@ -10,9 +10,12 @@
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="desktop.css">
-  <link rel="stylesheet" href="./treejs-master/treejs-master/treejs.css" />
+  <link rel="stylesheet" href="./mbraak-jqTree-22a45ba/jqtree.css">
+  
 
-
+  <!-- <link rel="stylesheet" href="/treejs-master/treejs.css">
+                                                          <link rel="stylesheet" href="/treejs-master/treejs.min.css">
+                                                         -->
   <title>SCANOSS Quickscan Lite</title>
 </head>
 
@@ -131,9 +134,8 @@
           <div class="loading">
             <h1><i class="fas fa-sync fa-spin"></i></h1>
             <h2>Preparing Scan for <span class="counter"></span> Files</h2>
-          </div>
-        <div class="filetree-container">
-          <p>aca va estar el filetree</p>
+        </div>
+        <div class="filetree-container" id="tree1">
         </div>
         
         <div class="row-report">
@@ -221,9 +223,11 @@
 
 
   <script src="./renderer.js"></script>
-  <script src="./filetree.js"></script>
-  <script src="./treejs-master/treejs-master/tree.js"></script>
+  <!-- <script src="./filetree.js"></script> -->
+  <!-- <script src="./treejs-master/tree.js"></script>
+                          <script src="./treejs-master/tree.min.js"></script> -->
+  <script src="./mbraak-jqTree-22a45ba/tree.jquery.js"></script>
 
-</body>
+  </body>
 
 </html>
