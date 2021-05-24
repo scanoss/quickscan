@@ -67,4 +67,5 @@ module.exports = {
     getFileExtention,
     getWfpFromFile,
     countFilesOnWFP,
+    MAX_FILES,
   };
