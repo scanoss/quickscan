@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 'use strict';
-const scanner = require('./scanner');
+
 const fs = require('original-fs');
 var Chart = require('chart.js');
 const { remote } = require('electron'),
@@ -24,7 +24,7 @@ const { remote } = require('electron'),
   app = remote.app,
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
-
+const explore = require ('./explore.js');
 
 window.$ = window.jQuery = require('jquery');
 window.Bootstrap = require('bootstrap');
@@ -106,7 +106,6 @@ scan_worker.onerror = (e) => {
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
-  alert(`Oops, something went wrong parsing a JSON object \n ${e.message}`);
 };
 
 obligation_worker.onerror = (e) => {
@@ -558,6 +557,9 @@ function formatDate(date) {
 function startScanningDirectory(path) {
   $('#resume-scan').hide();
   $('.otable').hide(); //Hide obligations table
+  
+  timerInstance.reset();
+
   if (licenseChart) {
     licenseChart.destroy();
   }
@@ -582,10 +584,10 @@ function startScanningDirectory(path) {
   $('.progress-bar').text(`0%`);
   $('.progress-bar').attr('aria-valuenow', 0);
 
-  let totalFiles = scanner.countFiles(path)
-  if(totalFiles>=scanner.MAX_FILES){
-    alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
-    totalFiles=scanner.MAX_FILES;
+  let totalFiles = explore.countFiles(path)
+  if(totalFiles>=explore.MAX_FILES){
+    alert(`Quickscan supports only ${explore.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
+    totalFiles=explore.MAX_FILES;
   }
 
 

@@ -28,25 +28,31 @@ const fs_asar = require('fs');
 const os = require('os');
 const path = require('path');
 
+const MALFORMED_JSON = `${os.tmpdir()}/quickscan-malformedJSON`
 const QUEUE_DIR = `${os.tmpdir()}/quickscan-queue`;
 const TIMEOUT = 60000;
 const MAX_RETRIES = 3;
 const RETRY_MAP = {};
 
 var RUNNING = 0;
+var ERROR = 0;
 var CHUNK_SIZE = 50;
 
 let TIMESTAMP = "quickscan-lite" + "1.2.3" + "05.18.21";
 
 onmessage = (e) => {
   
+  if(ERROR && e.data.resetError!= undefined){ 
+    ERROR = 0;
 
+    console.log('Error reset');
+  }
   CHUNK_SIZE = e.data.chunk;
   next();
 };
 
 function next() {
-  if (RUNNING) {
+  if (RUNNING || ERROR) {
     return;
   }
   const files = fs.readdirSync(QUEUE_DIR);
@@ -91,12 +97,15 @@ function scan_wfp (wfp, counter, file, context) {
 
         const bodyAsJson = JSON.parse(responseBodyAsText);
         return bodyAsJson;
+
       } catch (e) {
-        console.log('Unparseable body: ' + responseBodyAsText);
         
-        //Throw an error if the JSON is not parseable.
-        //It is catched on the promises chain and then scan_worker.onerror is called.
-        throw e;
+        if (!fs.existsSync(MALFORMED_JSON)) {
+          fs.mkdirSync(MALFORMED_JSON);
+        }       
+        fs.writeFileSync(`${MALFORMED_JSON}/${new Date().getTime()}.json`, responseBodyAsText);
+
+        return Promise.reject(new Error('Error parsing a JSON'));
       }
     })
     .then((json) => {
@@ -108,7 +117,7 @@ function scan_wfp (wfp, counter, file, context) {
       if (file in RETRY_MAP) {
         delete RETRY_MAP[file];
       }
-      next();
+      return next();
     })
     .catch((e) => {
       RUNNING = 0;
@@ -118,16 +127,15 @@ function scan_wfp (wfp, counter, file, context) {
         }
         if (RETRY_MAP[file] <= MAX_RETRIES) {
           RETRY_MAP[file]++;
-          next();
+          return next();
         } else {
-          setTimeout(() => {
-            throw e;
-          });
+          ERROR = 1;
+          setTimeout(() => {throw e;});
         }
       } else {
-        setTimeout(() => {
-          throw e;
-        });
+        ERROR=1; 
+        setTimeout(() => { throw e;});
+        
       }
     });
 }
