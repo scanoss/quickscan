@@ -17,6 +17,7 @@
  */
 
 /* 'use strict'; */
+/**/
 const scanner = require('./scanner');
 const fs = require('original-fs');
 var Chart = require('chart.js');
@@ -27,7 +28,7 @@ const { remote } = require('electron'),
 var Timer = require('easytimer.js').Timer;
 const dirTree = require("directory-tree");
 const $ = require('jquery');
-
+  
 
 
 
