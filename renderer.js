@@ -481,19 +481,20 @@ function createCharts() {
 
 
 
-// Cancu change
 
 
+// this function renders the file tree of the folder
 function treeHandler(ctx) {
-  $('.filetree-container').tree('destroy');
-  let directory = ctx.sourceDir;
+  $('.filetree-container').tree('destroy'); //destroy the last folder
+  let directory = ctx.sourceDir; // takes the directory of the folder
   console.log(directory);
-  let dataTree = [];
+  let dataTree = []; // initialize the dataTree variable with an empty array
 
-  let jsonTree = dirTree(directory);
+  let jsonTree = dirTree(directory); // convert the directory to json
 
   dataTree = [jsonTree];
 
+  // renders a filetree inside the container that you provide (http://mbraak.github.io/jqTree/)
   $('.filetree-container').tree({
     data: dataTree,
     autoOpen: 0,
@@ -515,8 +516,8 @@ function initReport(ctx) {
   $('.matches').text('0');
   $('#vuln-chart').hide();
   createCharts();
+  // calls the treeHandler functions
   treeHandler(ctx);
-  // Cancu change
 }
 
 
