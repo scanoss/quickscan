@@ -38,6 +38,7 @@ const $ = require('jquery');
 
 
 
+
 window.$ = window.jQuery = require('jquery');
 window.Bootstrap = require('bootstrap');
 const SCANOSS_DIR = `${app.getPath('appData')}/scanoss`;
@@ -322,8 +323,9 @@ function scan_callback(ctx) {
   if ($('.report').is(':hidden')) {
     $('.loading').hide();
     initReport(ctx);
-  }
 
+  }
+  
   let percent_completed = Math.round((100 * ctx.scanned) / ctx.total);
   let percent_matches = Math.round((100 * ctx.osscount) / ctx.total);
   $('.progress-bar').css('width', `${percent_completed}%`);
@@ -359,6 +361,7 @@ function scan_callback(ctx) {
     /* license obligations */
 
   }
+
 }
 
 
@@ -477,20 +480,30 @@ function createCharts() {
 
 
 
-/* function treeHandler(ctx){
-  const jsonTree = dirTree(ctx.sourceDir);
-  console.log(jsonTree);
-  console.log('-------------');
-  console.log(jsonTree.children);
-  console.log('-------------');
-  console.log(jsonTree.children.name);
-  for (item in jsonTree.children){
-    console.log(`${item.path}`)
-  }
-}
- */
 
- 
+// Cancu change
+
+
+function treeHandler(ctx) {
+  $('.filetree-container').tree('destroy');
+  let directory = ctx.sourceDir;
+  console.log(directory);
+  let dataTree = [];
+
+  let jsonTree = dirTree(directory);
+
+  dataTree = [jsonTree];
+
+  $('.filetree-container').tree({
+    data: dataTree,
+    autoOpen: 0,
+    onLoadFailed: function(response) {
+      console.log(reponse)
+    }
+  });
+  
+}
+
 
 
 function initReport(ctx) {
@@ -502,13 +515,8 @@ function initReport(ctx) {
   $('.matches').text('0');
   $('#vuln-chart').hide();
   createCharts();
-/*   treeHandler(ctx) */
-  const jsonTree = dirTree(ctx.sourceDir);
-  const dataTree = [jsonTree];
-  console.log(dataTree);
-  $('.filetree-container').tree({
-    data: dataTree,
-  });
+  treeHandler(ctx);
+  // Cancu change
 }
 
 

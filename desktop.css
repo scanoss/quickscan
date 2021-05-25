@@ -78,10 +78,10 @@ body {
   display: flex;
   float: left;
   background-color: rgb(221, 221, 221);
-  border: solid 1px #802020;
-  border-radius: 10px;
+  border: solid 1.5px #790600;
+  border-radius: 5px;
   padding: 5px;
-  margin: 5px;
+  margin: 15px;
   min-height: 95%;
   min-width: 10%;
 }
