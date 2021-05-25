@@ -36,7 +36,7 @@ const RETRY_MAP = {};
 var RUNNING = 0;
 var CHUNK_SIZE = 50;
 
-let TIMESTAMP = "quickscan-lite" + "1.2.2" + "05.12.21";
+let TIMESTAMP = "quickscan-lite" + "1.2.3" + "05.18.21";
 
 onmessage = (e) => {
   
