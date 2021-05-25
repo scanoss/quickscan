@@ -499,7 +499,7 @@ function treeHandler(ctx) {
     data: dataTree,
     autoOpen: 0,
     onLoadFailed: function(response) {
-      console.log(reponse)
+      console.log(response);
     }
   });
   
