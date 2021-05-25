@@ -24,12 +24,16 @@
     "@fortawesome/fontawesome-free": "^5.15.2",
     "bootstrap": "^4.6.0",
     "chart.js": "^2.9.4",
+    "directory-tree": "^2.2.9",
     "easytimer.js": "^4.3.1",
     "electron-about-window": "^1.13.4",
     "isbinaryfile": "^4.0.8",
-    "jquery": "^3.5.1",
+    "jqtree": "^1.6.0",
+    "jquery": "^3.6.0",
+    "jqueryfiletree": "^2.1.4",
     "original-fs": "^1.1.0",
     "popper.js": "^1.16.1",
+    "react-filetree-electron": "^1.2.2",
     "sqlite3": "^5.0.1"
   },
   "build": {
