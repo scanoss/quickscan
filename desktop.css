@@ -77,13 +77,13 @@ body {
 .filetree-container{
   display: flex;
   float: left;
-  background-color: rgb(221, 221, 221);
-  border: solid 1.5px #790600;
-  border-radius: 5px;
-  padding: 5px;
+  background-color: #ffff;
+  border-right: solid 2px #790600;
+  padding-right: 15px;
   margin: 15px;
-  min-height: 95%;
   min-width: 10%;
+  max-width: 20%;
+  height: 95%;
 }
 
 .chart {
