@@ -26,10 +26,6 @@ const { remote } = require('electron'),
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
 const dirTree = require("directory-tree");
-/* const TreeView = require("./treejs-master/tree");
-const TreeNode = require("./treejs-master/tree");
-const TreeView = require("./treejs-master/tree.min.js");
-const TreeNode = require("./treejs-master/tree.min.js"); */
 const $ = require('jquery');
 
 
@@ -609,7 +605,7 @@ function scanDirectory(ev) {
 
 
 
-// fs.readdirAsync(dir).then()
+
 
 
 

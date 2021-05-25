@@ -30,10 +30,8 @@
     "isbinaryfile": "^4.0.8",
     "jqtree": "^1.6.0",
     "jquery": "^3.6.0",
-    "jqueryfiletree": "^2.1.4",
     "original-fs": "^1.1.0",
     "popper.js": "^1.16.1",
-    "react-filetree-electron": "^1.2.2",
     "sqlite3": "^5.0.1"
   },
   "build": {

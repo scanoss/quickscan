@@ -14,7 +14,6 @@ const {
 } = require('./renderer.js');
 const scan_worker = new Worker('./scanner.js');
 var Timer = require('easytimer.js').Timer;
-const dirTree = require("directory-tree");
 
 const timerInstance = new Timer();
 
