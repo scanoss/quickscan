@@ -70,6 +70,12 @@ function scan_callback(ctx) {
 }
 
 
+
+
+
+
+
+
 function saveScanFile(ev, scanfile) {
   ev.preventDefault();
   let path = dialog.showSaveDialogSync(WIN, {

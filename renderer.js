@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-'use strict';
+
+/* 'use strict'; */
 const scanner = require('./scanner');
 const fs = require('original-fs');
 var Chart = require('chart.js');
@@ -24,6 +25,14 @@ const { remote } = require('electron'),
   app = remote.app,
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
+const dirTree = require("directory-tree");
+const $ = require('jquery');
+
+
+
+
+
+
 
 
 window.$ = window.jQuery = require('jquery');
@@ -131,6 +140,8 @@ function resumeScan(scandir) {
   });
 }
 
+
+
 function update_table(components) {
   let tbody = '.upgradeable tbody';
   $(tbody).html('');
@@ -146,6 +157,8 @@ function update_table(components) {
     }
   }
 }
+
+
 
 function update_vuln_table(components) {
   let tbody = '.upgradeable tbody';
@@ -165,12 +178,14 @@ function update_vuln_table(components) {
   }
 }
 
+
+
 function updateObligationTable(ctx) {
 
   const body_table = $('.otable tbody');
-  
+
   //Avoids the case when the user brings back a previous scan without the license obligations table
-  if(ctx.hasOwnProperty('obligations')) 
+  if(ctx.hasOwnProperty('obligations'))
   {
     const obligations = ctx.obligations;
 
@@ -189,10 +204,10 @@ function updateObligationTable(ctx) {
       let license_name = Object.keys(obligation)[0];
       let data = obligation[license_name][0];
 
-      //Add license name with tooltip  
-      row.append($(`<td> 
-                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip" 
-                  title="OSADL license obligations"> ${license_name} </a> 
+      //Add license name with tooltip
+      row.append($(`<td>
+                  <a href="${data.obligations}" target="_blank" data-toggle="tooltip"
+                  title="OSADL license obligations"> ${license_name} </a>
                   </td>`
       ));
 
@@ -242,6 +257,8 @@ function updateObligationTable(ctx) {
   }
 
 }
+
+
 
 function updateVulnChart(ctx) {
   if (ctx.vulns && Object.keys(ctx.vulns).length > 0) {
@@ -302,8 +319,9 @@ function scan_callback(ctx) {
   if ($('.report').is(':hidden')) {
     $('.loading').hide();
     initReport(ctx);
-  }
 
+  }
+  
   let percent_completed = Math.round((100 * ctx.scanned) / ctx.total);
   let percent_matches = Math.round((100 * ctx.osscount) / ctx.total);
   $('.progress-bar').css('width', `${percent_completed}%`);
@@ -339,7 +357,10 @@ function scan_callback(ctx) {
     /* license obligations */
 
   }
+
 }
+
+
 
 function createCharts() {
   licenseChart = new Chart($('#license-chart'), {
@@ -454,6 +475,34 @@ function createCharts() {
 }
 
 
+
+
+
+
+// this function renders the file tree of the folder
+function treeHandler(ctx) {
+  $('.filetree-container').tree('destroy'); //destroy the last folder
+  let directory = ctx.sourceDir; // takes the directory of the folder
+  console.log(directory);
+  let dataTree = []; // initialize the dataTree variable with an empty array
+
+  let jsonTree = dirTree(directory); // convert the directory to json
+
+  dataTree = [jsonTree];
+
+  // renders a filetree inside the container that you provide (http://mbraak.github.io/jqTree/)
+  $('.filetree-container').tree({
+    data: dataTree,
+    autoOpen: 0,
+    onLoadFailed: function(response) {
+      console.log(response);
+    }
+  });
+  
+}
+
+
+
 function initReport(ctx) {
   $('.report').show();
   $('.scanfolder').text(ctx.sourceDir);
@@ -463,7 +512,11 @@ function initReport(ctx) {
   $('.matches').text('0');
   $('#vuln-chart').hide();
   createCharts();
+  // calls the treeHandler functions
+  treeHandler(ctx);
 }
+
+
 
 function destroyCharts() {
   if (licenseChart) {
@@ -476,6 +529,8 @@ function destroyCharts() {
     vulnChart.destroy();
   }
 }
+
+
 
 function formatDate(date) {
   let formatted_date =
@@ -494,7 +549,9 @@ function formatDate(date) {
 }
 
 
+
 function startScanningDirectory(path) {
+
   $('#resume-scan').hide();
   $('.otable').hide(); //Hide obligations table
   if (licenseChart) {
@@ -512,6 +569,11 @@ function startScanningDirectory(path) {
     console.log('No directory selected');
     return;
   }
+
+
+
+
+
 
   $('.loading').show();
   $('.counter').html('0');
@@ -559,6 +621,17 @@ function scanDirectoryButton(ev) {
   let dir = dialog.showOpenDialogSync(options);
   startScanningDirectory(dir[0]);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function disableButtons() {
   $('#resume-scan a').addClass('disabled');

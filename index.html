@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="desktop.css">
-
   <title>SCANOSS Quickscan Lite</title>
 </head>
 
@@ -135,86 +134,91 @@
         </div>
 
       </div>
-      <div class="report-body">
-        <div class="loading">
-          <h1><i class="fas fa-sync fa-spin"></i></h1>
-          <h2>Preparing Scan for <span class="counter"></span> Files</h2>
+      
+
+        <div class="report-body">
+          <div class="loading">
+            <h1><i class="fas fa-sync fa-spin"></i></h1>
+            <h2>Preparing Scan for <span class="counter"></span> Files</h2>
         </div>
-        <div class="row">
-          <div class="col-sm chart">
-            <canvas id="license-chart" width="500" height="400"></canvas>
-          </div>
-          <div class="col-sm chart">
-            <div class="row">
-              <div class="col-sm chart">
-                <canvas id="oss-chart" width="500" height="150"></canvas>
-              </div>
-            </div> 
-            <div class="row">
-              <div class="col-sm chart">
-                <h5 id="novulns">No vulnerabilities detected</h5>
-                <canvas id="vuln-chart" width="500" height="300"></canvas>
+        <div class="filetree-container" id="tree1">
+        </div>
+        
+        <div class="row-report">
+                <div class="col-sm chart">
+                  <canvas id="license-chart" width="500" height="400"></canvas>
+                </div>
+                <div class="col-sm chart">
+                  <div class="row">
+                    <div class="col-sm chart">
+                      <canvas id="oss-chart" width="500" height="150"></canvas>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm chart">
+                      <h5 id="novulns">No vulnerabilities detected</h5>
+                      <canvas id="vuln-chart" width="500" height="300"></canvas>
+                    </div>
+                  </div>
+                </div>
+            </div>
+    
+            <div class="row ctable">
+              <div class="col-sm ">
+                <h6>Component matches for license <span class="hoverlicense"></span></h6>
+                <table class="table table-hover thead-light upgradeable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Vendor</th>
+                      <th scope="col">Component</th>
+                      <th scope="col">Version</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row ctable">
-          <div class="col-sm ">
-            <h6>Component matches for license <span class="hoverlicense"></span></h6>
-            <table class="table table-hover thead-light upgradeable">
-              <thead>
-                <tr>
-                  <th scope="col">Vendor</th>
-                  <th scope="col">Component</th>
-                  <th scope="col">Version</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
-          </div>
+    
+            <div class="row vtable">
+              <div class="col-sm ">
+                <h6>Components with <span class="severity"></span> Vulnerabilities</h6>
+                <table class="table table-hover thead-light upgradeable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Vendor</th>
+                      <th scope="col">Component</th>
+                      <th scope="col">Version</th>
+                      <th scope="col">CVE List</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+    
+            </div>
+    
+            <div class="row otable">
+              <div class="col-sm ">
+                <h6>License Obligations</h6>
+                <table class="table table-hover thead-light">
+                  <thead>
+                    <tr>
+                      <th scope="col">License Name</th>
+                      <th scope="col">Copyleft</th>
+                      <th scope="col">Patent Hint</th>
+                      <th scope="col">Incompatible Licenses</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+    
+            </div>
 
-        </div>
-
-        <div class="row vtable">
-          <div class="col-sm ">
-            <h6>Components with <span class="severity"></span> Vulnerabilities</h6>
-            <table class="table table-hover thead-light upgradeable">
-              <thead>
-                <tr>
-                  <th scope="col">Vendor</th>
-                  <th scope="col">Component</th>
-                  <th scope="col">Version</th>
-                  <th scope="col">CVE List</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-
-
-
-        <div class="row otable">
-          <div class="col-sm ">
-            <h6>License Obligations</h6>
-            <table class="table table-hover thead-light">
-              <thead>
-                <tr>
-                  <th scope="col">License Name</th>
-                  <th scope="col">Copyleft</th>
-                  <th scope="col">Patent Hint</th>
-                  <th scope="col">Incompatible Licenses</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
+          
 
 
 
@@ -225,6 +229,8 @@
 
 
   <script src="./renderer.js"></script>
-</body>
+  <script>let tree = require('jqtree/tree.jquery.js');</script>
+
+  </body>
 
 </html>
