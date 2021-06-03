@@ -1,7 +1,7 @@
 {
   "name": "quickscan-lite",
-  "version": "1.2.3",
-  "buildDate": "05.18.21",
+  "version": "1.2.4",
+  "buildDate": "05.18.26",
   "description": "A simple desktop application to use SCANOSS OSS KB to scan your files.",
   "main": "main.js",
   "scripts": {
@@ -16,6 +16,7 @@
   "author": "SCANOSS <info@scanoss.com>",
   "license": "GPL-2.0+",
   "devDependencies": {
+    "console.table": "^0.10.0",
     "electron": "^11.3.0",
     "electron-builder": "^22.9.1",
     "electron-notarize": "^1.0.0"

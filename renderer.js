@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 'use strict';
-const scanner = require('./scanner');
+
 const fs = require('original-fs');
 var Chart = require('chart.js');
 const { remote } = require('electron'),
@@ -24,7 +24,7 @@ const { remote } = require('electron'),
   app = remote.app,
   WIN = remote.getCurrentWindow();
 var Timer = require('easytimer.js').Timer;
-
+const explore = require ('./explore.js');
 
 window.$ = window.jQuery = require('jquery');
 window.Bootstrap = require('bootstrap');
@@ -54,6 +54,10 @@ var globctx;
 function assignCtx(ctx) {
   globctx = ctx;
 }
+
+//This parameter configures the maximum number of licences shown in the pie chart.
+//The rest of them are grouped into a category called Others
+const maxDataOnPieChar =8;
 
 const chartColors = {
   red: '#790600',
@@ -102,7 +106,6 @@ scan_worker.onerror = (e) => {
     ev.preventDefault();
     resumeScan(globctx.scandir);
   });
-  alert(`Oops, something went wrong parsing a JSON object \n ${e.message}`);
 };
 
 obligation_worker.onerror = (e) => {
@@ -114,7 +117,6 @@ obligation_worker.onmessage = (e) => {
   updateObligationTable(globctx);
   save_ctx(globctx);
 };
-
 
 
 function resumeScan(scandir) {
@@ -223,6 +225,7 @@ function updateObligationTable(ctx) {
     $(body_table).children().each((index, row) => {
       let license_element = $(row).children().eq(0);
       if (incompatible_licenses.has(license_element.text().trim())) {
+        $(row).addClass("table-danger");
         license_element.prepend('*');
         license_element.css({ 'color': 'red', 'font-weight': 'bold' });
         incompatible_licenses_count++;
@@ -285,14 +288,40 @@ function updateCharts(ctx) {
     .sort(([, a], [, b]) => b.counter - a.counter)
     .reduce((r, [k, v]) => ({ ...r, [k]: v.counter }), {});
 
-  licenseChart.data.labels = Object.keys(sortedLics).slice(0, 8);
-  licenseChart.data.datasets[0].data = Object.values(sortedLics).slice(0, 8);
-  licenseChart.update();
+    let labels = Object.keys(sortedLics);
+    let datasets = Object.values(sortedLics);
+    
+  //When there are more licenses than maxDataOnPieChar, they are grouped into a data segment called Others.
+  if(labels.length > maxDataOnPieChar){
+    
+    licenseChart.data.datasets[0].data=datasets.slice(0,maxDataOnPieChar);
+    let sum = datasets.slice(maxDataOnPieChar).reduce((acc,current)=> acc+current);
+    licenseChart.data.datasets[0].data[maxDataOnPieChar]=sum; 
+    
+    //This global variable is used by tooltip callback on the pie chart
+    globctx.otherTooltipTitle=`Others: ${sum}`;
+
+    licenseChart.data.labels=labels.slice(0,maxDataOnPieChar);
+    licenseChart.data.labels[maxDataOnPieChar]='Others';
+
+    let str = [];
+    datasets.slice(maxDataOnPieChar).forEach((data,index) => {
+      let name = labels[index+maxDataOnPieChar];
+      str.push(new Array(`${name}: ${data}`));
+    })
+    //This global variable is used by tooltip callback on the pie chart
+    globctx.otherTooltipLabel=str;  
+    
+  }else{
+    licenseChart.data.datasets[0].data = datasets;
+    licenseChart.data.labels=labels;
+  }
 
   ossChart.data.datasets[0].data = [ctx.osscount];
   ossChart.data.datasets[1].data = [ctx.total - ctx.osscount];
   ossChart.update();
 
+  licenseChart.update();
   updateVulnChart(ctx);
 }
 
@@ -354,13 +383,41 @@ function createCharts() {
         text: 'Top Licenses',
       },
       onClick: (e, elements) => {
-        if (elements.length > 0) {
-          let license = elements[0]._chart.data.labels[elements[0]._index];
-          $('.hoverlicense').text(license);
-          update_table(globctx.licenses[license].components);
-          $('.vtable').hide();
-          $('.ctable').show();
-        }
+          if (elements.length > 0) {
+            if(elements[0]._index<maxDataOnPieChar) {
+            let license = elements[0]._chart.data.labels[elements[0]._index];
+            $('.hoverlicense').show();
+            $('.hoverlicense').text(license);
+            update_table(globctx.licenses[license].components);
+            $('.vtable').hide();
+            $('.ctable').show();
+            }else{
+              //When the category Others is clicked, hide the vuln and components table
+              $('.hoverlicense').hide();
+              $('.ctable').hide();
+              $('.vtable').hide();
+            }
+          }
+      },
+      legend: {
+        onClick: (e, elements) => {}, //Avoids hide-show options when legends are pressed.
+      },
+      tooltips: {
+        callbacks:{
+          label: function (tooltipItem, data) {
+            if(tooltipItem.index==maxDataOnPieChar)
+              return globctx.otherTooltipLabel
+            else{
+                const quantity = data.datasets[0].data[tooltipItem.index];
+                const name = data.labels[tooltipItem.index]
+                return `${name}: ${quantity}` ;
+            }
+          },
+          title: function (tooltipItem, obj){
+              if(tooltipItem[0].index==maxDataOnPieChar)
+                return globctx.otherTooltipTitle;
+          },
+        },
       },
     },
   });
@@ -383,6 +440,9 @@ function createCharts() {
           stacked: true,
         },
       ],
+    },
+    legend: {
+      onClick: (e, elements) => {}, //Avoids hide-show options when legends are pressed.
     },
     title: {
       display: true,
@@ -497,6 +557,9 @@ function formatDate(date) {
 function startScanningDirectory(path) {
   $('#resume-scan').hide();
   $('.otable').hide(); //Hide obligations table
+  
+  timerInstance.reset();
+
   if (licenseChart) {
     licenseChart.destroy();
   }
@@ -515,16 +578,25 @@ function startScanningDirectory(path) {
 
   $('.loading').show();
   $('.counter').html('0');
-  
-  let totalFiles = scanner.countFiles(path)
-  if(totalFiles>=scanner.MAX_FILES){
-    alert(`Quickscan supports only ${scanner.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
-    totalFiles=scanner.MAX_FILES;
+
+  $('.scanfolder').text(path);
+  $('.progress-bar').css('width', `0%`);
+  $('.progress-bar').text(`0%`);
+  $('.progress-bar').attr('aria-valuenow', 0);
+
+  let totalFiles = explore.countFiles(path)
+  if(totalFiles>=explore.MAX_FILES){
+    alert(`Quickscan supports only ${explore.MAX_FILES} files.\nThe folder selected contains ${totalFiles}.\nThe remaining files will be ignored.`);
+    totalFiles=explore.MAX_FILES;
   }
+
+
+
 
   timerInstance.start();
   timerInstance.addEventListener('secondsUpdated', function (e) {
     $('#elapsed').html(timerInstance.getTimeValues().toString());
+    $('#elapsed-init').html(timerInstance.getTimeValues().toString());
   });
 
   let ctx = {

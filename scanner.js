@@ -21,8 +21,9 @@ const winnowing = require('./winnowing');
 const path = require('path');
 const { request } = require('http');
 const { count } = require('console');
+const explore = require('./explore.js');
 
-const MAX_FILES = 10000;
+
 const request_worker = new Worker('./queued-request-worker.js');
 var SCANOSS_DIR;
 // The list of files is divided in chunks for processing.
@@ -130,6 +131,7 @@ function resumeScan(scandir) {
   });
   let ctxString = fs.readFileSync(`${scandir}/ctx.json`);
   ctx = JSON.parse(ctxString);
+  request_worker.postMessage({resetError: 1});
   scan_wfp_worker();
   try {
     fs.unlinkSync(`${scandir}/FAILED`);
@@ -143,57 +145,9 @@ function get_scan_dir(path) {
 }
 
 
-function countFilesOnWFP(text) {
-  let count = (text.match(/file=/g)||[]).length
-  return count;
-}
 
 
 
-function getWfpFromFile(filepath) {
-  let content = fs.readFileSync(filepath,{encoding:'utf8', flag:'r'});
-  return content;
-
-}
-
-function getFileExtention(filepath){
-  return filepath.split(".").pop().toLocaleLowerCase();
-}
-
-function countFiles(dir) {
-
-  let index = 0;
-  const files = fs.readdirSync(dir);
-  files.forEach((file) => {
-    var filepath = path.join(dir, file);
-    const stats = fs.lstatSync(filepath);
-    if (
-      stats.isDirectory() &&
-      !stats.isSymbolicLink() &&
-      !winnowing.is_filtered_dir(filepath)
-    ) {
-      index += countFiles(filepath);
-    } else if (
-      stats.isFile() &&
-      !stats.isSymbolicLink() &&
-      !winnowing.FILTERED_EXT.includes(path.extname(filepath))
-      )
-      
-    {
-      //If there are a wfp file, explore it and add to count
-      if( getFileExtention(filepath) == "wfp") {
-        content = fs.readFileSync(filepath,{encoding:'utf8', flag:'r'});
-        index += countFilesOnWFP(content);
-      }else{
-        index++;
-      }
-      
-      
-    }
-  });
-
-  return index;
-}
 
 async function* walk(dir) {
   for await (const d of await fs.promises.opendir(dir)) {
@@ -222,7 +176,7 @@ async function recursive_scan(dir) {
   loop:
   for await (const filepath of walk(dir)) {
       
-    if(getFileExtention(filepath)!="wfp") {
+    if(explore.getFileExtention(filepath)!="wfp") {
         counter++;
         totalCounter++;
         preWfp = winnowing.wfp_for_file(
@@ -240,7 +194,7 @@ async function recursive_scan(dir) {
       }else{
         
         //Particular case when a wfp file it is found
-        let wfpString = getWfpFromFile(filepath);
+        let wfpString = explore.getWfpFromFile(filepath);
         let wfpArray = wfpString.split('file=');
         wfpArray.shift(); //Removes the first element because it's empty
 
@@ -257,12 +211,12 @@ async function recursive_scan(dir) {
           }
           wfp+=preWfp;
 
-          if(totalCounter>=MAX_FILES)
+          if(totalCounter>=explore.MAX_FILES)
             break loop;
         }
       }
 
-      if(totalCounter>=MAX_FILES)
+      if(totalCounter>=explore.MAX_FILES)
         break loop;
   }
   if (dir === ctx.sourceDir && wfp !== '') {
@@ -469,6 +423,4 @@ function update_vulns (ctx, json) {
 
 module.exports = {
   scanFolder,
-  countFiles,
-  MAX_FILES
 };
